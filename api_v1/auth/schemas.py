@@ -6,7 +6,7 @@ from api_v1.auth.security import hash_password
 class AuthUser(BaseModel):
     email: EmailStr
 
-    hashed_password: str
+    password: str
 
 
 class RegisterUser(BaseModel):
@@ -22,7 +22,7 @@ class RegisterUser(BaseModel):
 class UserSchema(BaseModel):
     model_config = ConfigDict(strict=True)
 
-    username: str
+    email: str
     password: bytes
 
 

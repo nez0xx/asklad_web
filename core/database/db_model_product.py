@@ -9,7 +9,7 @@ class Product(Base):
 
     title: Mapped[str]
 
-    amount: Mapped[int]
+    amount: Mapped[int] = mapped_column(server_default='0')
 
     owner: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
