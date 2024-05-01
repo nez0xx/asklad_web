@@ -1,12 +1,11 @@
-import secrets
 import uuid
-from typing import Any, Annotated
-from fastapi import APIRouter, HTTPException, Depends, status, Header, Response, Cookie
-from fastapi.security import HTTPBasicCredentials, HTTPBasic, HTTPBearer
-from . import utils, jwt_auth
-from auth.jwt_auth import validate_auth_user, get_current_user, get_jwt_token_payload, create_access_token, \
+from typing import Any
+from fastapi import APIRouter, Depends
+from fastapi.security import HTTPBasic, HTTPBearer
+from . import jwt_auth
+from api_v1.auth.jwt_auth import validate_auth_user, get_current_user, create_access_token, \
     get_current_user_for_refresh
-from auth.schemas import UserSchema, TokenInfo
+from api_v1.auth.schemas import UserSchema, TokenInfo
 
 
 http_bearer = HTTPBearer(auto_error=False)

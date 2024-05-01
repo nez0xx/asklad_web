@@ -1,8 +1,8 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
-from core.models import Base, Order
-from core.models.db_model_order_product_association import ProductOrderAssociation
+from core.database import Base, Order
+from core.database.db_model_order_product_association import ProductOrderAssociation
 
 
 class Product(Base):

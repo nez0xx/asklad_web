@@ -1,11 +1,11 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
-from core.models import Base, Product
-from core.models.db_model_order_product_association import ProductOrderAssociation
+from core.database import Base
+from .db_model_order_product_association import ProductOrderAssociation
 
 if TYPE_CHECKING:
-    from core.models import Customer
+    from core.database import Customer, Product
 
 class Order(Base):
 

@@ -2,15 +2,12 @@ from fastapi import HTTPException, Form, status, Depends
 from jwt import InvalidTokenError
 
 from .schemas import UserSchema
-from . import utils
+from . import security, utils
 from fastapi.security import OAuth2PasswordBearer, HTTPBearer
 
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
-import bcrypt
-import jwt
-
-from core.settings import settings
+from core.settings import setsecur
 
 TOKEN_TYPE_FIELD = "type"
 
@@ -26,12 +23,12 @@ oauth2_scheme = OAuth2PasswordBearer(
 
 ivan = UserSchema(
     username="Ivan",
-    password=utils.hash_password("parmezan777")
+    password=security.hash_password("parmezan777")
 )
 
 marianna = UserSchema(
     username="m1eonva",
-    password=utils.hash_password("911gt3rs")
+    password=security.hash_password("911gt3rs")
 )
 
 users_db = {
@@ -51,10 +48,10 @@ def validate_auth_user(
     if not (user := users_db.get(username)):
         raise unauthed_exc
 
-    if not utils.validate_password(
+    if not (security.check_password(
         password=password,
         hashed_password=user.password,
-    ):
+    )):
         raise unauthed_exc
 
     return user

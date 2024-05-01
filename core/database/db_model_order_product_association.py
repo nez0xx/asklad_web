@@ -5,7 +5,7 @@ from .db_model_base import Base
 
 
 if TYPE_CHECKING:
-    from core.models import Product, Order
+    from core.database import Product, Order
 
 
 class ProductOrderAssociation(Base):
