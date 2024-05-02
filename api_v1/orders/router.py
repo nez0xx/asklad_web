@@ -5,9 +5,14 @@ from api_v1.orders import crud
 from api_v1.orders.schemas import OrderCreate
 from core.database.db_helper import db_helper
 
+from fastapi.security import HTTPBearer
+
+http_bearer = HTTPBearer()
+
 router = APIRouter(
     prefix="/orders",
-    tags=["Orders"]
+    tags=["Orders"],
+    dependencies=[Depends(http_bearer)]
 )
 
 

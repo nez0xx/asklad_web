@@ -30,6 +30,7 @@ def get_current_token_payload(token=Depends(oauth2_scheme)):
     try:
         payload = utils.decode_jwt(token)
     except InvalidTokenError as e:
+        print("7"*100)
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -49,6 +50,13 @@ async def get_current_user(
         detail="invalid username or password",
     )
 
+    if payload[TOKEN_TYPE_FIELD] != ACCESS_TOKEN_TYPE:
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid token type: access expected"
+        )
+
     user_email = payload["email"]
     user = await get_user_by_email(session, user_email)
 
@@ -66,6 +74,7 @@ def get_current_user_for_refresh(
         detail="invalid username or password",
     )
     if payload[TOKEN_TYPE_FIELD] != REFRESH_TOKEN_TYPE:
+
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid token type: refresh expected"
@@ -76,11 +85,14 @@ def get_current_user_for_refresh(
         return user
 
     raise unauthed_exc
-def create_jwt(token_type: str,
-               payload: dict,
-               expire_minutes: int = settings.auth_jwt.access_token_expire_minutes,
-               expire_timedelta: timedelta | None = None
-               ) -> str:
+
+
+def create_jwt(
+        token_type: str,
+        payload: dict,
+        expire_minutes: int = settings.auth_jwt.access_token_expire_minutes,
+        expire_timedelta: timedelta | None = None
+) -> str:
 
     payload[TOKEN_TYPE_FIELD] = token_type
     token = utils.encode_jwt(payload)
@@ -103,9 +115,6 @@ def create_refresh_token(user_email):
     }
     refresh_token = create_jwt(REFRESH_TOKEN_TYPE, payload)
     return refresh_token
-
-
-
 
 
 async def authenticate_user(

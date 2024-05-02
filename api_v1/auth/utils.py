@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
-
-import bcrypt
+import uuid
 import jwt
 
 from core.settings import settings
@@ -39,5 +38,9 @@ def decode_jwt(
         algorithms=[algorithm],
     )
     return decoded
+
+def generate_session_id() -> str:
+    return uuid.uuid4().hex
+
 
 
