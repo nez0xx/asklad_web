@@ -32,10 +32,10 @@ router = APIRouter(
 
 @router.post("/signup")
 async def register_user(
-    user_info: RegisterUser,
+    user_schema: RegisterUser,
     session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
 ):
-    user = await crud.create_user(session, user_info)
+    user = await crud.create_user(session, user_schema)
     return user
 
 

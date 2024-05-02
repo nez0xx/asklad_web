@@ -27,16 +27,17 @@ oauth2_scheme = OAuth2PasswordBearer(
 
 
 def get_current_token_payload(token=Depends(oauth2_scheme)):
+
     try:
         payload = utils.decode_jwt(token)
-    except InvalidTokenError as e:
-        print("7"*100)
 
+    except InvalidTokenError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"invalid token error: {e}",
             # detail=f"invalid token error",
         )
+
     return payload
 
 

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from .products.schemas import Product
+from .products.schemas import ProductCreate
 
 
 class OrderCreate(BaseModel):
@@ -9,6 +9,4 @@ class OrderCreate(BaseModel):
 
     customer_phone: str
 
-    owner: int
-
-    products: list[Product]
+    products: list[ProductCreate]

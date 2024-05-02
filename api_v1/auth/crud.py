@@ -5,10 +5,10 @@ from api_v1.auth.schemas import RegisterUser
 from core.database import User
 
 
-async def create_user(session: AsyncSession, user_info: RegisterUser):
+async def create_user(session: AsyncSession, user_schema: RegisterUser):
 
-    hashed_password = user_info.hashed_password
-    email = user_info.email
+    hashed_password = user_schema.hashed_password
+    email = user_schema.email
 
     user = User(hashed_password=hashed_password, email=email)
 
@@ -23,5 +23,4 @@ async def get_user_by_email(session: AsyncSession, email) -> User | None:
     stmt = select(User).where(User.email == email)
     result = await session.execute(stmt)
     user = result.scalar_one_or_none()
-    print(user, '-'*100)
     return user
