@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database.db_model_order_product_association import ProductOrderAssociation
 from .schemas import OrderCreate
-from .products.crud import create_product
+from .products.crud import create_product, get_product_by_id
 
 
 async def create_order(session: AsyncSession, order_schema: OrderCreate, owner_id: int):
@@ -32,9 +32,8 @@ async def create_order(session: AsyncSession, order_schema: OrderCreate, owner_i
         ))
 
     session.add(order)
-    print("7"*100)
     await session.commit()
-    return order
+    return order.id
 
 
 async def get_all_orders(
@@ -45,9 +44,18 @@ async def get_all_orders(
 
     if is_given_out:
         print(is_given_out, type(is_given_out))
-        stmt = select(Order).where(Order.owner == owner_id).where(Order.is_given_out == is_given_out)
+        stmt = (
+            select(Order)
+                .options(selectinload(Order.products_details))
+                .where(Order.owner == owner_id)
+                .where(Order.is_given_out == is_given_out)
+        )
     else:
-        stmt = select(Order).where(Order.owner == owner_id)
+        stmt = (
+            select(Order)
+            .options(selectinload(Order.products_details))
+            .where(Order.owner == owner_id)
+        )
 
     result = await session.execute(stmt)
     scalars_result = result.scalars().all()
@@ -55,7 +63,14 @@ async def get_all_orders(
 
 
 async def get_order_by_id(session: AsyncSession, id: str, owner_id: int) -> Order | None:
-    stmt = select(Order).options(selectinload(Order.products_details)).where(Order.id == id).where(Order.owner == owner_id)
+
+    stmt = (
+        select(Order)
+        .options(selectinload(Order.products_details))
+        .where(Order.id == id)
+        .where(Order.owner == owner_id)
+    )
+
     result = await session.execute(stmt)
     order = result.scalar_one_or_none()
     for assoc in order.products_details:
@@ -64,11 +79,25 @@ async def get_order_by_id(session: AsyncSession, id: str, owner_id: int) -> Orde
 
 
 async def give_out(session: AsyncSession, order_id: str, owner_id: int):
-    stmt = select(Order).where(Order.id == order_id).where(Order.owner == owner_id)
+
+    stmt = (
+        select(Order)
+        .options(selectinload(Order.products_details))
+        .where(Order.id == order_id)
+        .where(Order.owner == owner_id)
+    )
+
     result = await session.execute(stmt)
     order = result.scalar_one_or_none()
+
     if order:
+
+        for assoc in order.products_details:
+            product = await get_product_by_id(session, assoc.id)
+            product.amount -= assoc.amount
+
         order.is_given_out = True
         await session.commit()
+
     return order
 

@@ -34,3 +34,10 @@ async def get_all_products(session: AsyncSession, owner_id):
     return products
 
 
+async def get_product_by_id(session: AsyncSession, id: str):
+    stmt = select(Product).where(Product.id == id)
+    result = await session.execute(stmt)
+    product = result.scalar_one_or_none()
+    return product
+
+
