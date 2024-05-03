@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 from core.database import Base
@@ -8,6 +8,8 @@ if TYPE_CHECKING:
     from core.database import Customer, Product
 
 class Order(Base):
+
+    id: Mapped[str] = mapped_column(primary_key=True)
 
     customer: Mapped[int] = mapped_column(ForeignKey("customers.id"))
 
@@ -19,9 +21,9 @@ class Order(Base):
 
     owner: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
-    products: Mapped[list["Product"]] = relationship(
-        secondary="product_order_association",
-        back_populates="orders",
+    is_given_out: Mapped[bool] = mapped_column(
+        default=False,
+        server_default=text("false")
     )
 
     products_details: Mapped[list["ProductOrderAssociation"]] = relationship(

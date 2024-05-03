@@ -6,4 +6,4 @@ class ProductCreate(BaseModel):
 
     amount: int
 
-    atomy_id: int
+    id: str

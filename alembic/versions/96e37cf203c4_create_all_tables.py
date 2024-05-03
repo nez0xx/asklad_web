@@ -1,8 +1,8 @@
-"""create tables
+"""create all tables
 
-Revision ID: 88a5cca993bd
+Revision ID: 96e37cf203c4
 Revises: 
-Create Date: 2024-05-02 23:49:21.062664
+Create Date: 2024-05-03 16:12:32.292021
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '88a5cca993bd'
+revision: str = '96e37cf203c4'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -31,34 +31,34 @@ def upgrade() -> None:
     )
     op.create_table('customers',
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('atomy_id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.String(), nullable=False),
     sa.Column('owner', sa.Integer(), nullable=False),
-    sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['owner'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('products',
+    sa.Column('id', sa.String(), nullable=False),
     sa.Column('title', sa.String(), nullable=False),
-    sa.Column('atomy_id', sa.Integer(), nullable=False),
     sa.Column('amount', sa.Integer(), server_default='0', nullable=False),
     sa.Column('owner', sa.Integer(), nullable=False),
-    sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['owner'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('atomy_id', 'owner', name='idx_unique_id_owner')
+    sa.UniqueConstraint('id', 'owner', name='idx_unique_id_owner')
     )
     op.create_table('orders',
-    sa.Column('customer', sa.Integer(), nullable=False),
+    sa.Column('id', sa.String(), nullable=False),
+    sa.Column('customer', sa.String(), nullable=False),
     sa.Column('customer_phone', sa.String(), nullable=False),
     sa.Column('owner', sa.Integer(), nullable=False),
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('is_given_out', sa.Boolean(), server_default=sa.text('(false)'), nullable=False),
     sa.ForeignKeyConstraint(['customer'], ['customers.id'], ),
     sa.ForeignKeyConstraint(['owner'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('product_order_association',
-    sa.Column('product_id', sa.Integer(), nullable=False),
-    sa.Column('order_id', sa.Integer(), nullable=False),
+    sa.Column('product_id', sa.String(), nullable=False),
+    sa.Column('order_id', sa.String(), nullable=False),
+    sa.Column('amount', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ),
     sa.ForeignKeyConstraint(['product_id'], ['products.id'], ),

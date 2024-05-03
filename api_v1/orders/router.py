@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from api_v1.auth.service import get_current_user
 from api_v1.orders import crud
@@ -17,6 +17,21 @@ router = APIRouter(
 )
 
 
+@router.get(path="/")
+async def get_orders(
+        is_given_out: bool | None = None,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+        user: User = Depends(get_current_user)
+):
+
+    orders = await crud.get_all_orders(
+        session=session,
+        owner_id=user.id,
+        is_given_out=is_given_out
+    )
+
+    return orders
+
 @router.post(
     path="/create_order"
 )
@@ -27,7 +42,31 @@ async def create_order_view(
 
 ):
     order = await crud.create_order(session, order_schema, owner_id=user.id)
-    return order
+    print('--'*100)
+    return {"a":1}
+
+
+@router.post(path="/give_out")
+async def give_order_out(
+        order_id: str,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+        user: User = Depends(get_current_user)
+):
+    order = await crud.give_out(
+        session=session,
+        order_id=order_id,
+        owner_id=user.id
+    )
+
+    if order:
+        return order
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"order with id={order_id} not exists"
+        )
+
+
 
 @router.get(
     path="/products"
@@ -39,5 +78,8 @@ async def create_order_view(
 ):
     products = await get_all_products(session, user.id)
     return products
+
+
+
 
 

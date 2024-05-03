@@ -20,9 +20,11 @@ class ProductOrderAssociation(Base):
         ),
     )
 
-    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
+    product_id: Mapped[str] = mapped_column(ForeignKey("products.id"))
 
-    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id"))
+    order_id: Mapped[str] = mapped_column(ForeignKey("orders.id"))
+
+    amount: Mapped[int]
 
     order: Mapped["Order"] = relationship(
         back_populates="products_details",
