@@ -25,9 +25,10 @@ async def create_order(session: AsyncSession, order_schema: OrderCreate, owner_i
             product_schema=product_schema,
             owner_id=owner_id
         )
-        order.products_details.append(ProductOrderAssociation(
+        session.add(ProductOrderAssociation(
             product=product,
-            amount=product_schema.amount
+            amount=product_schema.amount,
+            order=order
         ))
 
     session.add(order)
@@ -53,8 +54,8 @@ async def get_all_orders(
     return [product for product in scalars_result]
 
 
-async def get_order_by_id(session: AsyncSession, id: str) -> Order | None:
-    stmt = select(Order).where(Order.id == id)
+async def get_order_by_id(session: AsyncSession, id: str, owner_id: int) -> Order | None:
+    stmt = select(Order).options(selectinload(Order.products_details)).where(Order.id == id).where(Order.owner == owner_id)
     result = await session.execute(stmt)
     order = result.scalar_one_or_none()
     for assoc in order.products_details:

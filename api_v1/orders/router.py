@@ -32,6 +32,7 @@ async def get_orders(
 
     return orders
 
+
 @router.post(
     path="/create_order"
 )
@@ -42,7 +43,7 @@ async def create_order_view(
 
 ):
     order = await crud.create_order(session, order_schema, owner_id=user.id)
-    print('--'*100)
+    print('--'*100, order.id, order.customer_phone)
     return {"a":1}
 
 
@@ -79,6 +80,18 @@ async def create_order_view(
     products = await get_all_products(session, user.id)
     return products
 
+@router.get(path="/{id}")
+async def get_order(
+    id: str,
+    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+    user: User = Depends(get_current_user)
+):
+    order = await crud.get_order_by_id(
+        session=session,
+        id=id,
+        owner_id=user.id
+    )
+    return order
 
 
 
