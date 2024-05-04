@@ -7,3 +7,8 @@ class ProductCreate(BaseModel):
     amount: int
 
     id: str
+
+
+class ProductUpdate(BaseModel):
+    title: str | None = None
+    amount: int | None = None

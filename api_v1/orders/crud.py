@@ -5,15 +5,22 @@ from core.database import Order, Product
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database.db_model_order_product_association import ProductOrderAssociation
+from .customers.crud import get_or_create_customer
 from .schemas import OrderCreate
 from .products.crud import create_product, get_product_by_id
 
 
 async def create_order(session: AsyncSession, order_schema: OrderCreate, owner_id: int):
 
+    customer = await get_or_create_customer(
+        session=session,
+        customer_schema=order_schema.customer,
+        owner_id=owner_id
+    )
+
     order = Order(
         id=order_schema.id,
-        customer=order_schema.customer,
+        customer=order_schema.customer.id,
         customer_phone=order_schema.customer_phone,
         owner=owner_id
     )

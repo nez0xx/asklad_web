@@ -5,8 +5,10 @@ from api_v1.orders import crud
 from api_v1.orders.schemas import OrderCreate
 from core.database import User
 from core.database.db_helper import db_helper
-from .products.crud import get_all_products
+from .customers.crud import get_all_customers
+from .products.crud import get_all_products, get_product_by_id, update_product
 from fastapi.security import HTTPBearer
+from .products.schemas import ProductUpdate
 
 http_bearer = HTTPBearer()
 
@@ -15,6 +17,8 @@ router = APIRouter(
     tags=["Orders"],
     dependencies=[Depends(http_bearer)]
 )
+
+
 
 
 @router.get(path="/")
@@ -47,6 +51,8 @@ async def create_order_view(
     return {"The created order id": order_id}
 
 
+
+
 @router.post(path="/give_out")
 async def give_order_out(
         order_id: str,
@@ -68,17 +74,6 @@ async def give_order_out(
         )
 
 
-
-@router.get(
-    path="/products"
-)
-async def get_all_products_view(
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user)
-
-):
-    products = await get_all_products(session, user.id)
-    return products
 
 @router.get(path="/{id}")
 async def get_order(

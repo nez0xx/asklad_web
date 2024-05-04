@@ -3,7 +3,7 @@ from sqlalchemy.orm import selectinload
 
 from core.database import Product
 from sqlalchemy.ext.asyncio import AsyncSession
-from .schemas import ProductCreate
+from .schemas import ProductCreate, ProductUpdate
 
 
 async def create_product(session: AsyncSession, product_schema: ProductCreate, owner_id: int):
@@ -34,10 +34,27 @@ async def get_all_products(session: AsyncSession, owner_id):
     return products
 
 
-async def get_product_by_id(session: AsyncSession, id: str):
-    stmt = select(Product).where(Product.id == id)
+async def get_product_by_id(session: AsyncSession, id: str, owner_id: int | None = None):
+
+    stmt = select(Product).options(selectinload(Product.orders_details)).where(Product.id == id)
+
+    if owner_id:
+        stmt = stmt.where(Product.owner == owner_id)
+
     result = await session.execute(stmt)
     product = result.scalar_one_or_none()
     return product
+
+
+async def update_product(
+    session: AsyncSession,
+    product: Product,
+    product_update: ProductUpdate
+) -> Product:
+    for name, value in product_update.model_dump(exclude_unset=True).items():
+        setattr(product, name, value)
+    await session.commit()
+    return product
+
 
 
