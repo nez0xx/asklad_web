@@ -39,7 +39,8 @@ def decode_jwt(
     )
     return decoded
 
-def generate_session_id() -> str:
+
+def generate_id() -> str:
     return uuid.uuid4().hex
 
 

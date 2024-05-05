@@ -20,4 +20,7 @@ class Settings(BaseSettings):
 
     db_url: str = f'sqlite+aiosqlite:///{BASE_DIR}/db.sqlite3'
 
+    SMTP_LOGIN: str = ""
+    SMTP_PASSWORD: str = ""
+
 settings = Settings()

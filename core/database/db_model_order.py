@@ -7,6 +7,7 @@ from .db_model_order_product_association import ProductOrderAssociation
 if TYPE_CHECKING:
     from core.database import Customer, Product
 
+
 class Order(Base):
 
     id: Mapped[str] = mapped_column(primary_key=True)

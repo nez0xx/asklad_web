@@ -8,10 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api_v1.auth.crud import get_user_by_email
 
 from api_v1.auth import crud, utils
-from api_v1.auth.schemas import AuthUser
+from api_v1.auth.schemas import AuthUser, RegisterUser
 from api_v1.auth.security import check_password
 from core.database import User, db_helper
 from core.settings import settings
+from smtp import send_message
 
 TOKEN_TYPE_FIELD = "type"
 
@@ -143,3 +144,46 @@ async def authenticate_user(
         raise unauthed_exc
 
     return user
+
+
+def create_confirm_email_link(token: str):
+    return f"127.0.0.1:8000/auth/confirm/{token}"
+
+
+async def register_user(session: AsyncSession, user_schema: RegisterUser):
+
+    user = await crud.create_user(session, user_schema=user_schema)
+
+    confirm_token = utils.encode_jwt(payload={"email": user_schema.email})
+
+    link = create_confirm_email_link(confirm_token)
+    message = f"""Subject: verify account
+    
+    
+    {link}
+    """
+    print(link, message)
+
+    send_message(user_schema.email, message=message)
+
+    return user
+
+
+async def confirm_email(session: AsyncSession, token: str):
+
+    payload = utils.decode_jwt(token)
+
+    user = await crud.get_user_by_email(
+        session=session,
+        email=payload["email"]
+    )
+    user.is_verify = True
+
+    await session.commit()
+
+    await crud.delete_token(
+        session=session,
+        user_id=user.id
+    )
+
+    return "success"

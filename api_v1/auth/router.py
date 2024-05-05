@@ -2,6 +2,7 @@ from fastapi.security import HTTPBasic, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import db_helper, User
 from fastapi import APIRouter, Depends
+from smtp.service import send_message
 from . import crud, service
 from typing import Any
 
@@ -17,7 +18,7 @@ from api_v1.auth.schemas import (
     RegisterUser,
     AuthUser
 )
-
+from .crud import create_or_override_confirm_token
 
 http_bearer = HTTPBearer(auto_error=False)
 security = HTTPBasic()
@@ -35,7 +36,7 @@ async def register_user(
     user_schema: RegisterUser,
     session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
 ):
-    user = await crud.create_user(session, user_schema)
+    user = await service.register_user(session, user_schema)
     return user
 
 
@@ -56,8 +57,10 @@ async def auth_user_issue_jwt(
     )
 
 @router.get('/me')
-def get_me(user: User = Depends(get_current_user)):
+async def get_me(session=Depends(db_helper.get_scoped_session_dependency), user: User = Depends(get_current_user)):
+    token = await create_or_override_confirm_token(session, user)
     return user
+
 
 
 @router.get("/refresh")
@@ -68,4 +71,16 @@ def refresh_token(
     return TokenInfo(
         access_token=access_token
     )
+
+
+@router.get("/confirm/{token}")
+async def confirm_email_view(
+    token: str,
+    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
+):
+    await service.confirm_email(session, token)
+
+    return {"result":"success!"}
+
+
 

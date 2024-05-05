@@ -1,21 +1,23 @@
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload, joinedload
 from .schemas import CustomerSchema
-from core.database import Customer
+from core.database import Customer, Order
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def get_all_customers(session: AsyncSession, owner_id: int):
 
     stmt = (
-        select(Customer, func.count(Customer.orders)).options(selectinload(Customer.orders))
-        .where(Customer.owner == owner_id)
+        select(Order.customer, func.count(Order.customer))
+        .join(Order.customer)
+        .group_by(Order.customer)
     )
 
     result = await session.execute(stmt)
-    customers = result.scalars().all()
-
-    return customers
+    for i in result.fetchall():
+        print(i[0], i[1])
+    print(result)
+    return result
 
 
 async def get_or_create_customer(session: AsyncSession, customer_schema: CustomerSchema, owner_id: int):
