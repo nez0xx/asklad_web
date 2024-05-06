@@ -151,7 +151,12 @@ def create_confirm_email_link(token: str):
 
 
 async def register_user(session: AsyncSession, user_schema: RegisterUser):
-
+    user = await crud.get_user_by_email(
+        session=session,
+        email=user_schema.email
+    )
+    if user:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exists")
     user = await crud.create_user(session, user_schema=user_schema)
 
     confirm_token = utils.encode_jwt(payload={"email": user_schema.email})

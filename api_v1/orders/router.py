@@ -9,13 +9,15 @@ from .customers.crud import get_all_customers
 from .products.crud import get_all_products, get_product_by_id, update_product
 from fastapi.security import HTTPBearer
 from .products.schemas import ProductUpdate
+from api_v1.auth.dependencies import check_user_is_verify
+
 
 http_bearer = HTTPBearer()
 
 router = APIRouter(
     prefix="/orders",
     tags=["Orders"],
-    dependencies=[Depends(http_bearer)]
+    dependencies=[Depends(http_bearer), Depends(check_user_is_verify)]
 )
 
 

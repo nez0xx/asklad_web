@@ -7,13 +7,14 @@ from core.database.db_helper import db_helper
 from . import crud
 from fastapi.security import HTTPBearer
 from .schemas import ProductUpdate
+from api_v1.auth.dependencies import check_user_is_verify
 
 http_bearer = HTTPBearer()
 
 router = APIRouter(
     prefix="/products",
     tags=["Products"],
-    dependencies=[Depends(http_bearer)]
+    dependencies=[Depends(http_bearer), Depends(check_user_is_verify)]
 )
 
 

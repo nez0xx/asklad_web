@@ -5,6 +5,7 @@ from core.database import User
 from core.database.db_helper import db_helper
 from .crud import get_all_customers, get_customer_or_none
 from fastapi.security import HTTPBearer
+from api_v1.auth.dependencies import check_user_is_verify
 
 
 http_bearer = HTTPBearer()
@@ -12,7 +13,7 @@ http_bearer = HTTPBearer()
 router = APIRouter(
     prefix="/customers",
     tags=["Customers"],
-    dependencies=[Depends(http_bearer)]
+    dependencies=[Depends(http_bearer), Depends(check_user_is_verify)]
 )
 
 
