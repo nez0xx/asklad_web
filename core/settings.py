@@ -11,7 +11,7 @@ class AuthJWT(BaseModel):
     public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"
     algorithm: str = "RS256"
     # access_token_expire_minutes: int = 15
-    access_token_expire_minutes: int = 15
+    access_token_expire_minutes: int = 60
 
 
 class Settings(BaseSettings):
@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     db_url: str = f'sqlite+aiosqlite:///{BASE_DIR}/db.sqlite3'
 
-    SMTP_LOGIN: str = ""
-    SMTP_PASSWORD: str = ""
+    SMTP_LOGIN: str = "chugainov266@mail.ru"
+    SMTP_PASSWORD: str = "qgQqrFxyqW5UHebRzHqG"
 
 settings = Settings()

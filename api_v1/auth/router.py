@@ -67,7 +67,7 @@ async def get_me(session=Depends(db_helper.get_scoped_session_dependency), user:
 def refresh_token(
         user: UserSchema = Depends(get_current_user_for_refresh)
 ):
-    access_token = create_access_token(user)
+    access_token = create_access_token(user.email)
     return TokenInfo(
         access_token=access_token
     )

@@ -6,7 +6,8 @@ from core.database.db_helper import db_helper
 from .crud import get_all_customers, get_customer_or_none
 from fastapi.security import HTTPBearer
 from api_v1.auth.dependencies import check_user_is_verify
-
+from .schemas import CustomersListSchema, CustomersListItem
+from .validators import validate_customers_list
 
 http_bearer = HTTPBearer()
 
@@ -17,7 +18,10 @@ router = APIRouter(
 )
 
 
-@router.get(path='/')
+@router.get(
+    path='/',
+    response_model=CustomersListSchema
+)
 async def get_customers_list(
     session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
     user: User = Depends(get_current_user)
@@ -27,7 +31,9 @@ async def get_customers_list(
         owner_id=user.id
     )
 
-    return customers
+    schema = validate_customers_list(customers)
+
+    return schema
 
 
 @router.get(path="/{id}")

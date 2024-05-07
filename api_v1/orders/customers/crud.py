@@ -6,18 +6,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def get_all_customers(session: AsyncSession, owner_id: int):
-
     stmt = (
-        select(Order.customer, func.count(Order.customer))
-        .join(Order.customer)
-        .group_by(Order.customer)
-    )
+        select(Customer, func.count(Customer.id))
+        .outerjoin(Order, Customer.id == Order.customer)
+        .group_by(Customer.id)
+        .where(Customer.owner == owner_id))
 
     result = await session.execute(stmt)
-    for i in result.fetchall():
-        print(i[0], i[1])
-    print(result)
-    return result
+
+    customers = result.all()
+    return customers
 
 
 async def get_or_create_customer(session: AsyncSession, customer_schema: CustomerSchema, owner_id: int):
@@ -27,6 +25,7 @@ async def get_or_create_customer(session: AsyncSession, customer_schema: Custome
         .where(Customer.id == customer_schema.id)
         .where(Customer.owner == owner_id)
     )
+
     result = await session.execute(stmt)
     customer = result.scalar_one_or_none()
 

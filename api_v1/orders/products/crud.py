@@ -36,13 +36,16 @@ async def get_all_products(session: AsyncSession, owner_id):
 
 async def get_product_by_id(session: AsyncSession, id: str, owner_id: int | None = None):
 
-    stmt = select(Product).options(selectinload(Product.orders_details)).where(Product.id == id)
-
-    if owner_id:
-        stmt = stmt.where(Product.owner == owner_id)
+    stmt = (
+        select(Product)
+        .options(selectinload(Product.orders_details))
+        .where(Product.id == id)
+        .where(Product.owner==owner_id)
+    )
 
     result = await session.execute(stmt)
     product = result.scalar_one_or_none()
+
     return product
 
 

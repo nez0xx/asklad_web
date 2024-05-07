@@ -6,6 +6,7 @@ from core.database import Base
 if TYPE_CHECKING:
     from core.database import Order
 
+
 class Customer(Base):
 
     name: Mapped[str]

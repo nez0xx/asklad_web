@@ -1,8 +1,8 @@
-"""create all tables
+"""create tables
 
-Revision ID: 96e37cf203c4
+Revision ID: b52886f8540d
 Revises: 
-Create Date: 2024-05-03 16:12:32.292021
+Create Date: 2024-05-07 22:11:10.550706
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '96e37cf203c4'
+revision: str = 'b52886f8540d'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,6 +24,7 @@ def upgrade() -> None:
     sa.Column('hashed_password', sa.String(), nullable=False),
     sa.Column('email', sa.String(length=40), nullable=False),
     sa.Column('is_admin', sa.Boolean(), server_default=sa.text('(false)'), nullable=False),
+    sa.Column('is_verify', sa.Boolean(), server_default=sa.text('(false)'), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
@@ -35,6 +36,14 @@ def upgrade() -> None:
     sa.Column('owner', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['owner'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('email_confirm_tokens',
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('user_id')
     )
     op.create_table('products',
     sa.Column('id', sa.String(), nullable=False),
@@ -73,6 +82,7 @@ def downgrade() -> None:
     op.drop_table('product_order_association')
     op.drop_table('orders')
     op.drop_table('products')
+    op.drop_table('email_confirm_tokens')
     op.drop_table('customers')
     op.drop_table('users')
     # ### end Alembic commands ###

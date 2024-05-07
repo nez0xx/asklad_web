@@ -49,20 +49,14 @@ async def get_all_orders(
         is_given_out: bool | None = None
 ) -> list[Order] | None:
 
-    if is_given_out:
-        print(is_given_out, type(is_given_out))
-        stmt = (
-            select(Order)
-                .options(selectinload(Order.products_details))
-                .where(Order.owner == owner_id)
-                .where(Order.is_given_out == is_given_out)
-        )
-    else:
-        stmt = (
-            select(Order)
-            .options(selectinload(Order.products_details))
-            .where(Order.owner == owner_id)
-        )
+    stmt = (
+        select(Order)
+        .options(selectinload(Order.products_details))
+        .where(Order.owner == owner_id)
+    )
+
+    if is_given_out is not None:
+        stmt = stmt.where(Order.is_given_out == is_given_out)
 
     result = await session.execute(stmt)
     scalars_result = result.scalars().all()
@@ -80,8 +74,7 @@ async def get_order_by_id(session: AsyncSession, id: str, owner_id: int) -> Orde
 
     result = await session.execute(stmt)
     order = result.scalar_one_or_none()
-    for assoc in order.products_details:
-        print(assoc.amount)
+    
     return order
 
 
@@ -100,7 +93,11 @@ async def give_out(session: AsyncSession, order_id: str, owner_id: int):
     if order:
 
         for assoc in order.products_details:
-            product = await get_product_by_id(session, assoc.id)
+            product = await get_product_by_id(
+                session=session,
+                id=assoc.product_id,
+                owner_id=owner_id
+                )
             product.amount -= assoc.amount
 
         order.is_given_out = True

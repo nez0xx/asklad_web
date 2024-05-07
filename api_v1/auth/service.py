@@ -1,4 +1,5 @@
 from datetime import timedelta
+from email.mime.text import MIMEText
 
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer
@@ -67,7 +68,7 @@ async def get_current_user(
     raise unauthed_exc
 
 
-def get_current_user_for_refresh(
+async def get_current_user_for_refresh(
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         payload=Depends(get_current_token_payload)
 ):
@@ -82,7 +83,11 @@ def get_current_user_for_refresh(
             detail="Invalid token type: refresh expected"
         )
 
-    user = get_user_by_email(session)
+    user = await get_user_by_email(
+        session=session,
+        email=payload["sub"]
+    )
+
     if user:
         return user
 
@@ -97,7 +102,8 @@ def create_jwt(
 ) -> str:
 
     payload[TOKEN_TYPE_FIELD] = token_type
-    token = utils.encode_jwt(payload)
+    print(payload)
+    token = utils.encode_jwt(payload, expire_minutes=expire_minutes)
 
     return token
 
@@ -115,7 +121,7 @@ def create_refresh_token(user_email):
     payload = {
         "sub": user_email
     }
-    refresh_token = create_jwt(REFRESH_TOKEN_TYPE, payload)
+    refresh_token = create_jwt(REFRESH_TOKEN_TYPE, payload, expire_minutes=10)
     return refresh_token
 
 
@@ -162,14 +168,11 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
     confirm_token = utils.encode_jwt(payload={"email": user_schema.email})
 
     link = create_confirm_email_link(confirm_token)
-    message = f"""Subject: verify account
-    
-    
-    {link}
-    """
-    print(link, message)
 
-    send_message(user_schema.email, message=message)
+    print(link)
+
+    message = MIMEText(f'<a href="{link}">Verify</a>', 'html')
+    send_message(user_schema.email, message=message.as_string())
 
     return user
 
