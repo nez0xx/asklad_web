@@ -101,7 +101,7 @@ def create_jwt(
 ) -> str:
 
     payload[TOKEN_TYPE_FIELD] = token_type
-    print(payload)
+
     token = utils.encode_jwt(payload, expire_minutes=expire_minutes)
 
     return token

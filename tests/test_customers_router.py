@@ -1,3 +1,4 @@
+'''
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.auth.service import get_current_user
@@ -36,18 +37,20 @@ async def get_customers_list(
     return schema
 
 
-@router.get(path="/{customer_id}")
+@router.get(path="/{id}")
 async def get_customer(
-    customer_id: str,
+    id: str,
     session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
     user: User = Depends(get_current_user)
 ):
 
     customer = await get_customer_or_none(
         session=session,
-        id=customer_id,
+        id=id,
         owner_id=user.id
     )
 
     return customer
+
+'''
 
