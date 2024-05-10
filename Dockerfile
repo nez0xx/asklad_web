@@ -17,4 +17,4 @@ COPY . .
 
 ENV PYTHONPATH=/home/api
 
-CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9999"]
+CMD ["poetry", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "9999"]
