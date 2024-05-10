@@ -7,6 +7,7 @@ from tests.conftest import override_get_scoped_session
 
 async def test_get_customers_list(ac: AsyncClient):
 
+    # активация юзера вручную, чтоб можно было пройти проверку зависимости check_user_is_verify
     session = override_get_scoped_session()
     stmt = select(User).where(User.email == "test@test.ru")
     result = await session.execute(stmt)
@@ -18,12 +19,12 @@ async def test_get_customers_list(ac: AsyncClient):
     response = await ac.post("/auth/login", json={"email": "test@test.ru", "password": "qwerty"})
     access_token = response.json()["access_token"]
 
-    response = await ac.get("/customers", headers={"Authorization": f"Bearer {access_token}"})
-
+    response = await ac.get("/customers/", headers={"Authorization": f"Bearer {access_token}"})
     assert response.status_code == 200
 
-    response = await ac.get("/customers")
-    assert response.status_code == 401
+    response = await ac.get("/customers/")
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Not authenticated"}
 
 '''
 
