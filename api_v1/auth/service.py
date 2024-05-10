@@ -153,7 +153,7 @@ async def authenticate_user(
 
 
 def create_confirm_email_link(token: str):
-    return f"127.0.0.1:8000/auth/confirm/{token}"
+    return f"sir.ru:8000/auth/confirm/{token}"
 
 
 async def register_user(session: AsyncSession, user_schema: RegisterUser):
@@ -171,8 +171,18 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
 
     print(link)
 
-    message = MIMEText(f'<a href="{link}">Verify</a>', 'html')
-    send_message(user_schema.email, message=message.as_string())
+
+    html = u'''\
+    <html>
+        <head></head>
+        <body>
+        <p>Verify your account --></p>
+            <a href="%s">Verify</a>
+        </body>
+    </html>
+    '''  % link
+    print(html)
+    send_message(user_schema.email, html_message=html)
 
     return user
 

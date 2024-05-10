@@ -74,7 +74,7 @@ async def get_order_by_id(session: AsyncSession, id: str, owner_id: int) -> Orde
 
     result = await session.execute(stmt)
     order = result.scalar_one_or_none()
-    
+
     return order
 
 
