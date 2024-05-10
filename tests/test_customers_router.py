@@ -1,41 +1,31 @@
-'''
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from src.api_v1.auth.service import get_current_user
+from httpx import AsyncClient
+from sqlalchemy import select
+
 from src.core.database import User
-from src.core.database.db_helper import db_helper
-from .crud import get_all_customers, get_customer_or_none
-from fastapi.security import HTTPBearer
-from src.api_v1.auth.dependencies import check_user_is_verify
-from .schemas import CustomersListSchema
-from .validators import validate_customers_list
-
-http_bearer = HTTPBearer()
-
-router = APIRouter(
-    prefix="/customers",
-    tags=["Customers"],
-    dependencies=[Depends(http_bearer), Depends(check_user_is_verify)]
-)
+from tests.conftest import override_get_scoped_session
 
 
-@router.get(
-    path='/',
-    response_model=CustomersListSchema
-)
-async def get_customers_list(
-    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-    user: User = Depends(get_current_user)
-):
-    customers = await get_all_customers(
-        session=session,
-        owner_id=user.id
-    )
+async def test_get_customers_list(ac: AsyncClient):
 
-    schema = validate_customers_list(customers)
+    session = override_get_scoped_session()
+    stmt = select(User).where(User.email == "test@test.ru")
+    result = await session.execute(stmt)
+    user = result.scalar_one_or_none()
+    user.is_verify = True
+    await session.commit()
+    await session.close()
 
-    return schema
+    response = await ac.post("/auth/login", json={"email": "test@test.ru", "password": "qwerty"})
+    access_token = response.json()["access_token"]
 
+    response = await ac.get("/customers", headers={"Authorization": f"Bearer {access_token}"})
+
+    assert response.status_code == 200
+
+    response = await ac.get("/customers")
+    assert response.status_code == 401
+
+'''
 
 @router.get(path="/{id}")
 async def get_customer(
