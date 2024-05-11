@@ -15,6 +15,6 @@ class Customer(Base):
         back_populates="customer_relationship"
     )
 
-    id: Mapped[str] = mapped_column(primary_key=True)
+    atomy_id: Mapped[str]
 
     owner: Mapped[int] = mapped_column(ForeignKey("users.id"))

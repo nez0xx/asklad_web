@@ -10,6 +10,21 @@ from .schemas import OrderCreate
 from .products.crud import create_product, get_product_by_id
 
 
+async def get_order_by_id(session: AsyncSession, id: str, owner_id: int) -> Order | None:
+
+    stmt = (
+        select(Order)
+        .options(selectinload(Order.products_details))
+        .where(Order.id == id)
+        .where(Order.owner == owner_id)
+    )
+
+    result = await session.execute(stmt)
+    order = result.scalar_one_or_none()
+
+    return order
+
+
 async def create_order(session: AsyncSession, order_schema: OrderCreate, owner_id: int):
 
     customer = await get_or_create_customer(
@@ -20,7 +35,7 @@ async def create_order(session: AsyncSession, order_schema: OrderCreate, owner_i
 
     order = Order(
         id=order_schema.id,
-        customer=order_schema.customer.id,
+        customer=order_schema.customer.atomy_id,
         customer_phone=order_schema.customer_phone,
         owner=owner_id
     )
@@ -63,21 +78,6 @@ async def get_all_orders(
     return [product for product in scalars_result]
 
 
-async def get_order_by_id(session: AsyncSession, id: str, owner_id: int) -> Order | None:
-
-    stmt = (
-        select(Order)
-        .options(selectinload(Order.products_details))
-        .where(Order.id == id)
-        .where(Order.owner == owner_id)
-    )
-
-    result = await session.execute(stmt)
-    order = result.scalar_one_or_none()
-
-    return order
-
-
 async def give_out(session: AsyncSession, order_id: str, owner_id: int):
 
     stmt = (
@@ -95,7 +95,7 @@ async def give_out(session: AsyncSession, order_id: str, owner_id: int):
         for assoc in order.products_details:
             product = await get_product_by_id(
                 session=session,
-                id=assoc.product_id,
+                atomy_id=assoc.product_id,
                 owner_id=owner_id
                 )
             product.amount -= assoc.amount

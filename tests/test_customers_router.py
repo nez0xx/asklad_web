@@ -19,8 +19,8 @@ async def test_get_customers_list(ac: AsyncClient):
     response = await ac.post("/auth/login", json={"email": "test@test.ru", "password": "qwerty"})
     access_token = response.json()["access_token"]
 
-    customer1 = Customer(name="Mihail", id="id1", owner=user.id)
-    customer2 = Customer(name="Sergey", id="id2", owner=user.id)
+    customer1 = Customer(name="Mihail", atomy_id="id1", owner=user.atomy_id)
+    customer2 = Customer(name="Sergey", atomy_id="id2", owner=user.atomy_id)
 
     session = override_get_scoped_session()
     session.add(customer1)
@@ -48,6 +48,12 @@ async def test_get_customer(ac: AsyncClient):
     response = await ac.get("/customers/id1", headers={"Authorization": f"Bearer {access_token}"})
     assert response.json() == {"id": "id1", "name": "Mihail", "owner": 1, "orders": []}
 
+    response = await ac.get("/customers/id1")
+    assert response.status_code == 403
+
+    response = await ac.get("customers/RANDOM_ID", headers={"Authorization": f"Bearer {access_token}"})
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Customer with RANDOM_ID does not exist"}
 
 
 

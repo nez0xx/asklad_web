@@ -1,8 +1,8 @@
 """create tables
 
-Revision ID: b52886f8540d
+Revision ID: 5f6fc299dade
 Revises: 
-Create Date: 2024-05-07 22:11:10.550706
+Create Date: 2024-05-11 19:55:38.017549
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'b52886f8540d'
+revision: str = '5f6fc299dade'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -37,22 +37,15 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['owner'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('email_confirm_tokens',
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('user_id')
-    )
     op.create_table('products',
-    sa.Column('id', sa.String(), nullable=False),
+    sa.Column('atomy_id', sa.String(), nullable=False),
     sa.Column('title', sa.String(), nullable=False),
     sa.Column('amount', sa.Integer(), server_default='0', nullable=False),
     sa.Column('owner', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['owner'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('id', 'owner', name='idx_unique_id_owner')
+    sa.UniqueConstraint('atomy_id', 'owner', name='idx_unique_atomy_id_owner')
     )
     op.create_table('orders',
     sa.Column('id', sa.String(), nullable=False),
@@ -65,7 +58,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('product_order_association',
-    sa.Column('product_id', sa.String(), nullable=False),
+    sa.Column('product_id', sa.Integer(), nullable=False),
     sa.Column('order_id', sa.String(), nullable=False),
     sa.Column('amount', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
@@ -82,7 +75,6 @@ def downgrade() -> None:
     op.drop_table('product_order_association')
     op.drop_table('orders')
     op.drop_table('products')
-    op.drop_table('email_confirm_tokens')
     op.drop_table('customers')
     op.drop_table('users')
     # ### end Alembic commands ###

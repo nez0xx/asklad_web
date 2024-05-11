@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.auth.service import get_current_user
-from src.api_v1.orders import crud
+from src.api_v1.orders import crud, service
 from src.api_v1.orders.schemas import OrderCreate
 from src.core.database import User
 from src.core.database.db_helper import db_helper
@@ -45,7 +45,7 @@ async def create_order_view(
         user: User = Depends(get_current_user)
 
 ):
-    order_id = await crud.create_order(session, order_schema, owner_id=user.id)
+    order_id = await service.add_order(session, order_schema, owner_id=user.id)
 
     return {"The created order id": order_id}
 

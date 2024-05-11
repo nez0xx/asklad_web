@@ -8,13 +8,13 @@ class Product(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "id",
+            "atomy_id",
             "owner",
-            name="idx_unique_id_owner",
+            name="idx_unique_atomy_id_owner",
         ),
     )
 
-    id: Mapped[str] = mapped_column(primary_key=True)
+    atomy_id: Mapped[str]
 
     title: Mapped[str]
 

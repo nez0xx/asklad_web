@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class CustomerSchema(BaseModel):
     name: str
-    id: str
+    atomy_id: str
 
 
 class CustomersListItem(CustomerSchema):

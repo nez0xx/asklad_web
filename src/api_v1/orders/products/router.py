@@ -39,7 +39,7 @@ async def get_product(
 
     product = await crud.get_product_by_id(
         session=session,
-        id=id,
+        atomy_id=id,
         owner_id=user.id
     )
 
@@ -56,7 +56,7 @@ async def update_product_view(
 
     product = await crud.get_product_by_id(
         session=session,
-        id=id,
+        atomy_id=id,
         owner_id=user.id
     )
     product = await crud.update_product(

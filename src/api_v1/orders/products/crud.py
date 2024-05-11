@@ -10,7 +10,7 @@ async def create_product(session: AsyncSession, product_schema: ProductCreate, o
 
     stmt = (
         select(Product)
-        .where(Product.id == product_schema.id)
+        .where(Product.atomy_id == product_schema.atomy_id)
         .where(Product.owner == owner_id)
     )
     result = await session.execute(stmt)
@@ -34,12 +34,12 @@ async def get_all_products(session: AsyncSession, owner_id):
     return products
 
 
-async def get_product_by_id(session: AsyncSession, id: str, owner_id: int | None = None):
+async def get_product_by_id(session: AsyncSession, atomy_id: str, owner_id: int | None = None):
 
     stmt = (
         select(Product)
         .options(selectinload(Product.orders_details))
-        .where(Product.id == id)
+        .where(Product.atomy_id == atomy_id)
         .where(Product.owner==owner_id)
     )
 

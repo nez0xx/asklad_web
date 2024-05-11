@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 async def get_all_customers(session: AsyncSession, owner_id: int):
     stmt = (
         select(Customer, func.count(Customer.id))
-        .outerjoin(Order, Customer.id == Order.customer)
-        .group_by(Customer.id)
+        .outerjoin(Order, Customer.atomy_id == Order.customer)
+        .group_by(Customer.atomy_id)
         .where(Customer.owner == owner_id))
 
     result = await session.execute(stmt)
@@ -22,7 +22,7 @@ async def get_or_create_customer(session: AsyncSession, customer_schema: Custome
 
     stmt = (
         select(Customer)
-        .where(Customer.id == customer_schema.id)
+        .where(Customer.atomy_id == customer_schema.atomy_id)
         .where(Customer.owner == owner_id)
     )
 
@@ -37,10 +37,10 @@ async def get_or_create_customer(session: AsyncSession, customer_schema: Custome
     return customer
 
 
-async def get_customer_or_none(session: AsyncSession, id: str, owner_id: int):
+async def get_customer_or_none(session: AsyncSession, customer_atomy_id: str, owner_id: int):
     stmt = (
         select(Customer).options(selectinload(Customer.orders))
-        .where(Customer.id == id)
+        .where(Customer.atomy_id == customer_atomy_id)
         .where(Customer.owner == owner_id)
     )
     result = await session.execute(stmt)

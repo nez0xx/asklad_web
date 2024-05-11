@@ -1,92 +1,60 @@
-'''
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from src.api_v1.auth.service import get_current_user
-from src.api_v1.orders import crud
-from src.api_v1.orders.schemas import OrderCreate
-from src.core.database import User
-from src.core.database.db_helper import db_helper
-from fastapi.security import HTTPBearer
-from src.api_v1.auth.dependencies import check_user_is_verify
+from httpx import AsyncClient
 
 
-http_bearer = HTTPBearer()
+order = {
+        "id": "order1",
+        "customer_phone": "88005553535",
+        "customer": {
+            "name": "Mihail",
+            "id": "id1"
+        },
+        "products": [
+            {
+                "title": "Toothpaste",
+                "amount": 5,
+                "id": "product1"
+            }
+        ]
+    }
 
-router = APIRouter(
-    prefix="/orders",
-    tags=["Orders"],
-    dependencies=[Depends(http_bearer), Depends(check_user_is_verify)]
-)
+
+async def test_create_order_view(ac: AsyncClient):
+
+    response = await ac.post("/auth/login", json={"email": "test@test.ru", "password": "qwerty"})
+    access_token = response.json()["access_token"]
+
+    response = await ac.post("/orders/create_order", json=order)
+    assert response.status_code == 403
+
+    response = await ac.post("/orders/create_order", json=order, headers={"Authorization": f"Bearer {access_token}"})
+    assert response.status_code == 200
+    assert response.json() == {"The created order id": order["id"]}
+
+    response = await ac.post("/orders/create_order", json=order, headers={"Authorization": f"Bearer {access_token}"})
+    assert response.status_code == 409
+    assert response.json() == {"detail": f"Order with id {order["id"]} already exists"}
+
+    response = await ac.post("/orders/create_order", json={"id": 123}, headers={"Authorization": f"Bearer {access_token}"})
+    assert response.status_code == 422
 
 
 
 
-@router.get(path="/")
-async def get_orders(
-        is_given_out: bool | None = None,
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user)
+
+
+async def test_get_orders(ac: AsyncClient):
+
+    response = ac.get("/orders/")
+
+
+
+async def test_give_order_out(ac: AsyncClient):
+    response = ac.post("/orders/give_out")
+
+
+async def test_get_order(ac: AsyncClient
 ):
-
-    orders = await crud.get_all_orders(
-        session=session,
-        owner_id=user.id,
-        is_given_out=is_given_out
-    )
-
-    return orders
+    response = ac.post("/orders/order1")
 
 
-@router.post(
-    path="/create_order"
-)
-async def create_order_view(
-        order_schema: OrderCreate,
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user)
-
-):
-    order_id = await crud.create_order(session, order_schema, owner_id=user.id)
-
-    return {"The created order id": order_id}
-
-
-
-
-@router.post(path="/give_out")
-async def give_order_out(
-        order_id: str,
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user)
-):
-    order = await crud.give_out(
-        session=session,
-        order_id=order_id,
-        owner_id=user.id
-    )
-
-    if order:
-        return order
-
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"order with id={order_id} not exists"
-        )
-
-
-
-@router.get(path="/{id}")
-async def get_order(
-    id: str,
-    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-    user: User = Depends(get_current_user)
-):
-    order = await crud.get_order_by_id(
-        session=session,
-        id=id,
-        owner_id=user.id
-    )
-    return order
-
-'''
 

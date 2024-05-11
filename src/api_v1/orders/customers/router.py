@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.auth.service import get_current_user
 from src.core.database import User
@@ -45,9 +45,12 @@ async def get_customer(
 
     customer = await get_customer_or_none(
         session=session,
-        id=customer_id,
+        customer_atomy_id=customer_id,
         owner_id=user.id
     )
 
-    return customer
+    if customer:
+        return customer
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Customer with {customer_id} does not exist")
 
