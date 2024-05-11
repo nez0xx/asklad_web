@@ -57,16 +57,4 @@ async def test_confirm_email_view(
     ac: AsyncClient
 ):
     await service.confirm_email(session, token)
-
-
-
-
-
-async def test_signup_user_already_exists():
-
-    session = override_get_scoped_session()
-    query = select(User)
-    result = await session.execute(query)
-    print("*", result.all())
-    await session.close()
-    '''
+'''
