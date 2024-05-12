@@ -30,7 +30,7 @@ order2 = {
         "products": [
             {
                 "title": "Vitamin C",
-                "amount": 1488,
+                "amount": 2599,
                 "atomy_id": "product2"
             }
         ]
@@ -87,7 +87,7 @@ async def test_get_orders(ac: AsyncClient):
                     'atomy_id': 'id1',
                     'id': 1, 'name':
                     'Mihail',
-                 'owner': 1
+                    'owner': 1
                 },
             'products_details': [
                 {
@@ -114,7 +114,7 @@ async def test_get_orders(ac: AsyncClient):
             'products_details': [
                 {
                     'order_id': 'order2',
-                    'amount': 1488,
+                    'amount': 2599,
                     'id': 2,
                     'product_id': 2
                 }]
