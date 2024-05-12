@@ -19,8 +19,8 @@ async def test_get_customers_list(ac: AsyncClient):
     response = await ac.post("/auth/login", json={"email": "test@test.ru", "password": "qwerty"})
     access_token = response.json()["access_token"]
 
-    customer1 = Customer(name="Mihail", atomy_id="id1", owner=user.atomy_id)
-    customer2 = Customer(name="Sergey", atomy_id="id2", owner=user.atomy_id)
+    customer1 = Customer(name="Mihail", atomy_id="id1", owner=user.id)
+    customer2 = Customer(name="Sergey", atomy_id="id2", owner=user.id)
 
     session = override_get_scoped_session()
     session.add(customer1)
@@ -31,8 +31,8 @@ async def test_get_customers_list(ac: AsyncClient):
     response = await ac.get("/customers/", headers={"Authorization": f"Bearer {access_token}"})
     # orders_count = 1, потому что минимум одна запись из левой при джоине будет найдена и посчитана за заказ
     assert response.json() == {"customers": [
-        {"name": "Mihail", "id": "id1", "orders_count": 1},
-        {"name": "Sergey", "id": "id2", "orders_count": 1}
+        {"name": "Mihail", "atomy_id": "id1", "orders_count": 1},
+        {"name": "Sergey", "atomy_id": "id2", "orders_count": 1}
     ]}
 
     response = await ac.get("/customers/")
@@ -46,7 +46,7 @@ async def test_get_customer(ac: AsyncClient):
     access_token = response.json()["access_token"]
     
     response = await ac.get("/customers/id1", headers={"Authorization": f"Bearer {access_token}"})
-    assert response.json() == {"id": "id1", "name": "Mihail", "owner": 1, "orders": []}
+    assert response.json() == {"atomy_id": "id1", "name": "Mihail", "orders": []}
 
     response = await ac.get("/customers/id1")
     assert response.status_code == 403

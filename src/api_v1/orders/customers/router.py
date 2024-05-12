@@ -6,7 +6,7 @@ from src.core.database.db_helper import db_helper
 from .crud import get_all_customers, get_customer_or_none
 from fastapi.security import HTTPBearer
 from src.api_v1.auth.dependencies import check_user_is_verify
-from .schemas import CustomersListSchema
+from .schemas import CustomersListSchema, CustomerGetSchema
 from .validators import validate_customers_list
 
 http_bearer = HTTPBearer()
@@ -50,7 +50,14 @@ async def get_customer(
     )
 
     if customer:
-        return customer
+
+        schema = CustomerGetSchema(
+            name=customer.name,
+            atomy_id=customer.atomy_id,
+            orders=customer.orders
+        )
+
+        return schema
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Customer with {customer_id} does not exist")
 

@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 from src.core.database import Base
@@ -8,6 +8,14 @@ if TYPE_CHECKING:
 
 
 class Customer(Base):
+
+    __table_args__ = (
+        UniqueConstraint(
+            "atomy_id",
+            "owner",
+            name="idx_unique_atomy_owner",
+        ),
+    )
 
     name: Mapped[str]
 

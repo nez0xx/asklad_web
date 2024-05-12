@@ -1,12 +1,16 @@
 from pydantic import BaseModel
 
 
-class CustomerSchema(BaseModel):
+class CustomeBaseSchema(BaseModel):
     name: str
     atomy_id: str
 
 
-class CustomersListItem(CustomerSchema):
+class CustomerGetSchema(CustomeBaseSchema):
+    orders: list
+
+
+class CustomersListItem(CustomeBaseSchema):
     orders_count: int
 
 

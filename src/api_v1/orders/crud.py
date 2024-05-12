@@ -35,7 +35,7 @@ async def create_order(session: AsyncSession, order_schema: OrderCreate, owner_i
 
     order = Order(
         id=order_schema.id,
-        customer=order_schema.customer.atomy_id,
+        customer_id=customer.id,
         customer_phone=order_schema.customer_phone,
         owner=owner_id
     )
@@ -66,7 +66,7 @@ async def get_all_orders(
 
     stmt = (
         select(Order)
-        .options(selectinload(Order.products_details))
+        .options(selectinload(Order.products_details), selectinload(Order.customer_relationship))
         .where(Order.owner == owner_id)
     )
 
@@ -95,7 +95,7 @@ async def give_out(session: AsyncSession, order_id: str, owner_id: int):
         for assoc in order.products_details:
             product = await get_product_by_id(
                 session=session,
-                atomy_id=assoc.product_id,
+                product_id=assoc.product_id,
                 owner_id=owner_id
                 )
             product.amount -= assoc.amount

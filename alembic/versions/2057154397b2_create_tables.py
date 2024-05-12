@@ -1,8 +1,8 @@
 """create tables
 
-Revision ID: 5f6fc299dade
+Revision ID: 2057154397b2
 Revises: 
-Create Date: 2024-05-11 19:55:38.017549
+Create Date: 2024-05-12 18:05:40.168689
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '5f6fc299dade'
+revision: str = '2057154397b2'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -32,10 +32,12 @@ def upgrade() -> None:
     )
     op.create_table('customers',
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('id', sa.String(), nullable=False),
+    sa.Column('atomy_id', sa.String(), nullable=False),
     sa.Column('owner', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['owner'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('atomy_id', 'owner', name='idx_unique_atomy_owner')
     )
     op.create_table('products',
     sa.Column('atomy_id', sa.String(), nullable=False),
@@ -49,11 +51,11 @@ def upgrade() -> None:
     )
     op.create_table('orders',
     sa.Column('id', sa.String(), nullable=False),
-    sa.Column('customer', sa.String(), nullable=False),
+    sa.Column('customer_id', sa.Integer(), nullable=False),
     sa.Column('customer_phone', sa.String(), nullable=False),
     sa.Column('owner', sa.Integer(), nullable=False),
     sa.Column('is_given_out', sa.Boolean(), server_default=sa.text('(false)'), nullable=False),
-    sa.ForeignKeyConstraint(['customer'], ['customers.id'], ),
+    sa.ForeignKeyConstraint(['customer_id'], ['customers.id'], ),
     sa.ForeignKeyConstraint(['owner'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

@@ -1,6 +1,6 @@
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
-from .schemas import CustomerSchema
+from .schemas import CustomeBaseSchema
 from src.core.database import Customer, Order
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 async def get_all_customers(session: AsyncSession, owner_id: int):
     stmt = (
         select(Customer, func.count(Customer.id))
-        .outerjoin(Order, Customer.atomy_id == Order.customer)
+        .outerjoin(Order, Customer.id == Order.customer_id)
         .group_by(Customer.atomy_id)
         .where(Customer.owner == owner_id))
 
@@ -18,7 +18,7 @@ async def get_all_customers(session: AsyncSession, owner_id: int):
     return customers
 
 
-async def get_or_create_customer(session: AsyncSession, customer_schema: CustomerSchema, owner_id: int):
+async def get_or_create_customer(session: AsyncSession, customer_schema: CustomeBaseSchema, owner_id: int):
 
     stmt = (
         select(Customer)

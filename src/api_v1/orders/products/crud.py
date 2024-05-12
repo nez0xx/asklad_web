@@ -34,13 +34,13 @@ async def get_all_products(session: AsyncSession, owner_id):
     return products
 
 
-async def get_product_by_id(session: AsyncSession, atomy_id: str, owner_id: int | None = None):
+async def get_product_by_id(session: AsyncSession, product_id: int, owner_id: int | None = None):
 
     stmt = (
         select(Product)
         .options(selectinload(Product.orders_details))
-        .where(Product.atomy_id == atomy_id)
-        .where(Product.owner==owner_id)
+        .where(Product.id == product_id)
+        .where(Product.owner == owner_id)
     )
 
     result = await session.execute(stmt)

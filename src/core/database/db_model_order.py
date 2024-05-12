@@ -12,7 +12,7 @@ class Order(Base):
 
     id: Mapped[str] = mapped_column(primary_key=True)
 
-    customer: Mapped[str] = mapped_column(ForeignKey("customers.id"))
+    customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"))
 
     customer_relationship: Mapped["Customer"] = relationship(
         back_populates="orders"

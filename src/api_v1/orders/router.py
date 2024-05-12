@@ -18,8 +18,6 @@ router = APIRouter(
 )
 
 
-
-
 @router.get(path="/")
 async def get_orders(
         is_given_out: bool | None = None,
@@ -37,7 +35,7 @@ async def get_orders(
 
 
 @router.post(
-    path="/create_order"
+    path="/"
 )
 async def create_order_view(
         order_schema: OrderCreate,
@@ -48,8 +46,6 @@ async def create_order_view(
     order_id = await service.add_order(session, order_schema, owner_id=user.id)
 
     return {"The created order id": order_id}
-
-
 
 
 @router.post(path="/give_out")

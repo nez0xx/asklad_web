@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from .customers.schemas import CustomerSchema
+from .customers.schemas import CustomeBaseSchema
 from .products.schemas import ProductCreate
 
 
@@ -10,6 +10,11 @@ class OrderCreate(BaseModel):
 
     customer_phone: str
 
-    customer: CustomerSchema
+    customer: CustomeBaseSchema
 
     products: list[ProductCreate]
+
+class OrderListItem(BaseModel):
+
+    customer_phone: str
+

@@ -14,7 +14,7 @@ def validate_customers_list(customers:  Sequence[Row[tuple[Customer, int]]]):
 
         customer = CustomersListItem(
             name=c.name,
-            id=c.atomy_id,
+            atomy_id=c.atomy_id,
             orders_count=item[1]
         )
 
