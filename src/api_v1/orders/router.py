@@ -69,16 +69,15 @@ async def give_order_out(
         )
 
 
-
-@router.get(path="/{id}")
+@router.get(path="/{atomy_id}")
 async def get_order(
-    id: str,
+    atomy_id: str,
     session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
     user: User = Depends(get_current_user)
 ):
     order = await crud.get_order_by_id(
         session=session,
-        id=id,
+        id=atomy_id,
         owner_id=user.id
     )
     return order
