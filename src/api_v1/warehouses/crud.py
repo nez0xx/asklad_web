@@ -23,6 +23,15 @@ async def get_warehouse_employee_association(session: AsyncSession, user_id: int
     return employee_details
 
 
+async def get_warehouse_by_name_and_owner(session: AsyncSession, name: str, owner_id: int):
+    stmt = (select(Warehouse)
+            .where(Warehouse.owner_id == owner_id)
+            .where(Warehouse.name == name))
+    result = await session.execute(stmt)
+    warehouse = result.scalar_one_or_none()
+    return warehouse
+
+
 async def get_warehouse_by_id(session: AsyncSession, warehouse_id: int):
     stmt = select(Warehouse).where(Warehouse.id == warehouse_id)
     result = await session.execute(stmt)
@@ -42,8 +51,6 @@ async def add_employee(session: AsyncSession, schema: EmployeeAddSchema):
         user_id=schema.user_id,
         warehouse_id=schema.warehouse_id
     ))
-
-
 
 
 async def delete_employee(session: AsyncSession, schema: EmployeeDeleteSchema):

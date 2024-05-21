@@ -43,7 +43,7 @@ async def create_order_view(
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
-    order_id = await service.add_order(session, order_schema)
+    order_id = await service.add_order(session, order_schema, employee_id=user.id)
 
     return {"The created order id": order_id}
 

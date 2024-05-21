@@ -23,12 +23,13 @@ router = APIRouter(
     response_model=CustomersListSchema
 )
 async def get_customers_list(
+    warehouse_id: int,
     session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
     user: User = Depends(get_current_user)
 ):
     customers = await get_all_customers(
         session=session,
-        owner_id=user.id
+        warehouse_id=warehouse_id
     )
 
     schema = validate_customers_list(customers)
@@ -38,6 +39,7 @@ async def get_customers_list(
 
 @router.get(path="/{customer_id}")
 async def get_customer(
+    warehouse_id: int,
     customer_id: str,
     session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
     user: User = Depends(get_current_user)
@@ -46,7 +48,7 @@ async def get_customer(
     customer = await get_customer_or_none(
         session=session,
         customer_atomy_id=customer_id,
-        owner_id=user.id
+        warehouse_id=warehouse_id
     )
 
     if customer:

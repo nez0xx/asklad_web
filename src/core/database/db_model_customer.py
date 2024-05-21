@@ -12,8 +12,8 @@ class Customer(Base):
     __table_args__ = (
         UniqueConstraint(
             "atomy_id",
-            "owner",
-            name="idx_unique_atomy_owner",
+            "warehouse_id",
+            name="idx_unique_atomy_id_warehouse_id",
         ),
     )
 

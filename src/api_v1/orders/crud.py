@@ -37,7 +37,8 @@ async def create_order(session: AsyncSession, order_schema: OrderBase):
         id=order_schema.atomy_id,
         customer_id=customer.atomy_id,
         customer_phone=order_schema.customer_phone,
-        warehouse_id=order_schema.warehouse_id
+        warehouse_id=order_schema.warehouse_id,
+        united_order_id=order_schema.united_order_id
     )
 
     for product_schema in order_schema.products:

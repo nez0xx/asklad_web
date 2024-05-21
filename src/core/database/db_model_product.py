@@ -9,8 +9,8 @@ class Product(Base):
     __table_args__ = (
         UniqueConstraint(
             "atomy_id",
-            "owner",
-            name="idx_unique_atomy_id_owner",
+            "warehouse_id",
+            name="idx_unique_atomy_id_warehouse_id",
         ),
     )
 

@@ -14,7 +14,7 @@ class Warehouse(Base):
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     employees_details: Mapped[list["WarehouseEmployeeAssociation"]] = relationship(
-        back_populates="warehouses",
+        back_populates="warehouse",
     )
 
     created_at: Mapped[datetime] = mapped_column(

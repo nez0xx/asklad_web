@@ -16,7 +16,7 @@ class WarehouseEmployeeAssociation(Base):
         UniqueConstraint(
             "user_id",
             "warehouse_id",
-            name="idx_unique_product_order",
+            name="idx_unique_user_warehouse",
         ),
     )
 

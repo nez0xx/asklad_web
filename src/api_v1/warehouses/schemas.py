@@ -7,8 +7,8 @@ class WarehouseCreateSchema(BaseModel):
 
 
 class EmployeeAddSchema(BaseModel):
-    user_id: int
-    warehouse_id: int
+    email: str
+    warehouse_name: str
 
 
 class EmployeeDeleteSchema(EmployeeAddSchema):

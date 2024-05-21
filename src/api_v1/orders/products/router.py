@@ -22,6 +22,7 @@ router = APIRouter(
     path="/"
 )
 async def get_all_products_view(
+        warehouse_id: int,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 

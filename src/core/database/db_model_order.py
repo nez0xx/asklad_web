@@ -25,7 +25,7 @@ class Order(Base):
 
     united_order_id: Mapped[str] = mapped_column(ForeignKey("united_orders.id"))
 
-    united_order_relationship: Mapped["UnitedOrder"] = relationship(back_populates="orders")
+    united_order_relationship: Mapped["UnitedOrder"] = relationship(back_populates="orders_relationship")
 
     is_given_out: Mapped[bool] = mapped_column(
         default=False,
