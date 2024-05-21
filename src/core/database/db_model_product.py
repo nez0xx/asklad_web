@@ -20,7 +20,7 @@ class Product(Base):
 
     amount: Mapped[int] = mapped_column(server_default='0')
 
-    owner: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    warehouse_id: Mapped[int] = mapped_column(ForeignKey("warehouses.id"))
 
     orders_details: Mapped[list["ProductOrderAssociation"]] = relationship(
         back_populates="product",

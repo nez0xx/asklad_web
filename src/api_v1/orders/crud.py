@@ -6,17 +6,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database.db_model_order_product_association import ProductOrderAssociation
 from .customers.crud import get_or_create_customer
-from .schemas import OrderCreate
+from .schemas import OrderBase
 from .products.crud import create_product, get_product_by_id
 
 
-async def get_order_by_id(session: AsyncSession, id: str, owner_id: int) -> Order | None:
+async def get_order_by_id(session: AsyncSession, id: str, warehouse_id: int) -> Order | None:
 
     stmt = (
         select(Order)
         .options(selectinload(Order.products_details))
         .where(Order.id == id)
-        .where(Order.owner == owner_id)
+        .where(Order.warehouse_id == warehouse_id)
     )
 
     result = await session.execute(stmt)
@@ -25,19 +25,19 @@ async def get_order_by_id(session: AsyncSession, id: str, owner_id: int) -> Orde
     return order
 
 
-async def create_order(session: AsyncSession, order_schema: OrderCreate, owner_id: int):
+async def create_order(session: AsyncSession, order_schema: OrderBase):
 
     customer = await get_or_create_customer(
         session=session,
         customer_schema=order_schema.customer,
-        owner_id=owner_id
+        warehouse_id=order_schema.warehouse_id
     )
 
     order = Order(
-        id=order_schema.id,
-        customer_id=customer.id,
+        id=order_schema.atomy_id,
+        customer_id=customer.atomy_id,
         customer_phone=order_schema.customer_phone,
-        owner=owner_id
+        warehouse_id=order_schema.warehouse_id
     )
 
     for product_schema in order_schema.products:
@@ -45,7 +45,7 @@ async def create_order(session: AsyncSession, order_schema: OrderCreate, owner_i
         product = await create_product(
             session=session,
             product_schema=product_schema,
-            owner_id=owner_id
+            warehouse_id=order_schema.warehouse_id
         )
         session.add(ProductOrderAssociation(
             product=product,
@@ -60,14 +60,14 @@ async def create_order(session: AsyncSession, order_schema: OrderCreate, owner_i
 
 async def get_all_orders(
         session: AsyncSession,
-        owner_id: int,
+        warehouse_id: int,
         is_given_out: bool | None = None
 ) -> list[Order] | None:
 
     stmt = (
         select(Order)
         .options(selectinload(Order.products_details), selectinload(Order.customer_relationship))
-        .where(Order.owner == owner_id)
+        .where(Order.warehouse_id == warehouse_id)
     )
 
     if is_given_out is not None:

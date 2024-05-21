@@ -1,20 +1,27 @@
 from pydantic import BaseModel
 
-from .customers.schemas import CustomeBaseSchema
-from .products.schemas import ProductCreate
+from .customers.schemas import CustomerBaseSchema
+from .products.schemas import ProductBase
 
 
-class OrderCreate(BaseModel):
+class OrderBase(BaseModel):
 
-    id: str
+    warehouse_id: int
+
+    atomy_id: str
 
     customer_phone: str
 
-    customer: CustomeBaseSchema
+    customer: CustomerBaseSchema
 
-    products: list[ProductCreate]
+    products: list[ProductBase]
+
 
 class OrderListItem(BaseModel):
 
     customer_phone: str
+
+
+
+
 

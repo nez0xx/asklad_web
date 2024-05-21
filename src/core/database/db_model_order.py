@@ -5,7 +5,8 @@ from src.core.database import Base
 from .db_model_order_product_association import ProductOrderAssociation
 
 if TYPE_CHECKING:
-    from src.core.database import Customer
+    from src.core.database import (Customer,
+                                   UnitedOrder)
 
 
 class Order(Base):
@@ -20,7 +21,11 @@ class Order(Base):
 
     customer_phone: Mapped[str]
 
-    owner: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    warehouse_id: Mapped[int] = mapped_column(ForeignKey("warehouses.id"))
+
+    united_order_id: Mapped[str] = mapped_column(ForeignKey("united_orders.id"))
+
+    united_order_relationship: Mapped["UnitedOrder"] = relationship(back_populates="orders")
 
     is_given_out: Mapped[bool] = mapped_column(
         default=False,

@@ -4,7 +4,9 @@ __all__ = (
     'Product',
     'Order',
     'User',
-    'Customer'
+    'Customer',
+    'UnitedOrder',
+    'Warehouse'
 )
 
 from .db_helper import db_helper
@@ -13,4 +15,6 @@ from .db_model_customer import Customer
 from .db_model_order import Order
 from .db_model_product import Product
 from .db_model_user import User
+from .db_model_united_order import UnitedOrder
+from .db_model_warehouse import Warehouse
 

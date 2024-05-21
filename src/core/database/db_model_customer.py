@@ -25,4 +25,4 @@ class Customer(Base):
 
     atomy_id: Mapped[str]
 
-    owner: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    warehouse_id: Mapped[int] = mapped_column(ForeignKey("warehouses.id"))

@@ -48,13 +48,3 @@ async def test_refresh_token(ac: AsyncClient):
     response = await ac.get("/auth/refresh", headers={"Authorization": f"Bearer RANDOM_STRING"})
     assert response.status_code == 401
 
-'''
-
-@router.get("/confirm/{token}")
-async def test_confirm_email_view(
-    token: str,
-    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-    ac: AsyncClient
-):
-    await service.confirm_email(session, token)
-'''

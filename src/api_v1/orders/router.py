@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.auth.service import get_current_user
 from src.api_v1.orders import crud, service
-from src.api_v1.orders.schemas import OrderCreate
+from src.api_v1.orders.schemas import OrderBase
 from src.core.database import User
 from src.core.database.db_helper import db_helper
 from fastapi.security import HTTPBearer
@@ -20,6 +20,7 @@ router = APIRouter(
 
 @router.get(path="/")
 async def get_orders(
+        warehouse_id: int,
         is_given_out: bool | None = None,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
@@ -27,7 +28,7 @@ async def get_orders(
 
     orders = await crud.get_all_orders(
         session=session,
-        owner_id=user.id,
+        warehouse_id=warehouse_id,
         is_given_out=is_given_out
     )
 
@@ -38,12 +39,11 @@ async def get_orders(
     path="/"
 )
 async def create_order_view(
-        order_schema: OrderCreate,
+        order_schema: OrderBase,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
-
 ):
-    order_id = await service.add_order(session, order_schema, owner_id=user.id)
+    order_id = await service.add_order(session, order_schema)
 
     return {"The created order id": order_id}
 
@@ -80,6 +80,7 @@ async def get_order(
         id=atomy_id,
         owner_id=user.id
     )
+
     return order
 
 
