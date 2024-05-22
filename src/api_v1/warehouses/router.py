@@ -6,6 +6,7 @@ from src.core.database.db_helper import db_helper
 from . import crud, service
 from fastapi.security import HTTPBearer
 from src.api_v1.auth.dependencies import check_user_is_verify
+from .crud import get_warehouse_by_name_and_owner, get_warehouse_by_id
 from .schemas import WarehouseCreateSchema, EmployeeAddSchema
 
 http_bearer = HTTPBearer()
@@ -38,6 +39,23 @@ async def add_employee_view(
         user: User = Depends(get_current_user)
 ):
     await service.add_employee(session=session, schema=schema, owner_id=user.id)
+
+
+@router.get(
+    path="/{warehouse_id}"
+)
+async def warehouse_info(
+        warehouse_id: int,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+        user: User = Depends(get_current_user)
+):
+    warehouse = await service.warehouse_info(
+        session=session,
+        employee_id=user.id,
+        warehouse_id=warehouse_id
+    )
+    print(warehouse)
+    return warehouse
 
 
 

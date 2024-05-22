@@ -4,9 +4,9 @@ from src.api_v1.auth.service import get_current_user
 from .. import crud
 from src.core.database import User
 from src.core.database.db_helper import db_helper
-from . import crud
+from . import crud, service
 from fastapi.security import HTTPBearer
-from .schemas import ProductUpdate
+from .schemas import ProductUpdateSchema
 from src.api_v1.auth.dependencies import check_user_is_verify
 
 http_bearer = HTTPBearer()
@@ -19,7 +19,7 @@ router = APIRouter(
 
 
 @router.get(
-    path="/"
+    path="/all"
 )
 async def get_all_products_view(
         warehouse_id: int,
@@ -31,46 +31,39 @@ async def get_all_products_view(
     return products
 
 
-@router.get(path="/{atomy_id}")
-async def get_product(
+@router.get(path="/")
+async def get_product_view(
+        warehouse_id: int,
         atomy_id: str,
         user: User = Depends(get_current_user),
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
 ):
 
-    product = await crud.get_product_by_atomy_id(
+    product = await service.get_product(
         session=session,
         atomy_id=atomy_id,
-        owner_id=user.id
+        employee_id=user.id,
+        warehouse_id=warehouse_id
     )
-
-    if product is None:
-
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Product with id {atomy_id} does not exist"
-        )
 
     return product
 
 
-@router.patch(path="/{atomy_id}")
+@router.patch(path="/")
 async def update_product_view(
+        warehouse_id: int,
         atomy_id: str,
-        product_schema: ProductUpdate,
+        product_schema: ProductUpdateSchema,
         user: User = Depends(get_current_user),
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
 ):
 
-    product = await crud.get_product_by_atomy_id(
+    product = await service.update_product(
         session=session,
         atomy_id=atomy_id,
-        owner_id=user.id
-    )
-    product = await crud.update_product(
-        session=session,
-        product=product,
-        product_update=product_schema
+        employee_id=user.id,
+        warehouse_id=warehouse_id,
+        schema=product_schema
     )
 
     return product

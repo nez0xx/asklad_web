@@ -3,7 +3,7 @@ from sqlalchemy.orm import selectinload
 
 from src.core.database import Product
 from sqlalchemy.ext.asyncio import AsyncSession
-from .schemas import ProductBase, ProductUpdate
+from .schemas import ProductBase, ProductUpdateSchema
 
 
 async def create_product(session: AsyncSession, product_schema: ProductBase, warehouse_id: int):
@@ -25,6 +25,7 @@ async def create_product(session: AsyncSession, product_schema: ProductBase, war
 
     await session.commit()
     return product
+
 
 async def get_all_products(session: AsyncSession, warehouse_id: int):
 
@@ -67,7 +68,7 @@ async def get_product_by_atomy_id(session: AsyncSession, atomy_id: str, warehous
 async def update_product(
     session: AsyncSession,
     product: Product,
-    product_update: ProductUpdate
+    product_update: ProductUpdateSchema
 ) -> Product:
     for name, value in product_update.model_dump(exclude_unset=True).items():
         setattr(product, name, value)

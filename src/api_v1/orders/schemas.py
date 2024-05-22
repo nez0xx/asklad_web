@@ -6,9 +6,9 @@ from .products.schemas import ProductBase
 
 class OrderBase(BaseModel):
 
-    united_order_id: str
+    #united_order_id: str
 
-    warehouse_id: int
+    #warehouse_id: int
 
     atomy_id: str
 
@@ -17,6 +17,12 @@ class OrderBase(BaseModel):
     customer: CustomerBaseSchema
 
     products: list[ProductBase]
+
+
+class UnitedOrderSchema(BaseModel):
+    warehouse_id: int
+    united_order_id: str
+    orders: list[OrderBase]
 
 
 class OrderListItem(BaseModel):

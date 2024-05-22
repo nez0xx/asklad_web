@@ -7,7 +7,7 @@ class WarehouseCreateSchema(BaseModel):
 
 
 class EmployeeAddSchema(BaseModel):
-    email: str
+    employee_id: int
     warehouse_name: str
 
 

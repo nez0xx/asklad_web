@@ -35,7 +35,9 @@ async def get_warehouse_by_name_and_owner(session: AsyncSession, name: str, owne
 async def get_warehouse_by_id(session: AsyncSession, warehouse_id: int):
     stmt = select(Warehouse).where(Warehouse.id == warehouse_id)
     result = await session.execute(stmt)
+    print("_____________________________")
     warehouse = result.scalar_one_or_none()
+    print(warehouse, "*"*100)
     return warehouse
 
 
@@ -44,6 +46,7 @@ async def create_warehouse(session: AsyncSession, schema: WarehouseCreateSchema)
     warehouse = Warehouse(**schema.model_dump())
     session.add(warehouse)
     await session.commit()
+    return warehouse
 
 
 async def add_employee(session: AsyncSession, schema: EmployeeAddSchema):

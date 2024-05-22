@@ -9,6 +9,6 @@ class ProductBase(BaseModel):
     atomy_id: str
 
 
-class ProductUpdate(BaseModel):
+class ProductUpdateSchema(BaseModel):
     title: str | None = None
     amount: int | None = None
