@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class ProductBase(BaseModel):
 
     title: str
@@ -12,3 +13,8 @@ class ProductBase(BaseModel):
 class ProductUpdateSchema(BaseModel):
     title: str | None = None
     amount: int | None = None
+
+
+class ProductInWarehouseSchema(BaseModel):
+    title: str
+    amount: int

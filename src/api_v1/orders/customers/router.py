@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.auth.service import get_current_user
 from src.core.database import User
 from src.core.database.db_helper import db_helper
-from .crud import get_all_customers, get_customer_or_none
+from . import service
+from .crud import get_customer_or_none
 from fastapi.security import HTTPBearer
 from src.api_v1.auth.dependencies import check_user_is_verify
 from .schemas import CustomersListSchema, CustomerGetSchema
@@ -23,13 +24,12 @@ router = APIRouter(
     response_model=CustomersListSchema
 )
 async def get_customers_list(
-    warehouse_id: int,
     session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
     user: User = Depends(get_current_user)
 ):
-    customers = await get_all_customers(
+    customers = await service.get_all_customers(
         session=session,
-        warehouse_id=warehouse_id
+        user_id=user.id
     )
 
     schema = validate_customers_list(customers)

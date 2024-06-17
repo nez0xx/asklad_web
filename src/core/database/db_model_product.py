@@ -6,21 +6,9 @@ from src.core.database.db_model_order_product_association import ProductOrderAss
 
 class Product(Base):
 
-    __table_args__ = (
-        UniqueConstraint(
-            "atomy_id",
-            "warehouse_id",
-            name="idx_unique_atomy_id_warehouse_id",
-        ),
-    )
-
-    atomy_id: Mapped[str]
+    id: Mapped[str] = mapped_column(primary_key=True)
 
     title: Mapped[str]
-
-    amount: Mapped[int] = mapped_column(server_default='0')
-
-    warehouse_id: Mapped[int] = mapped_column(ForeignKey("warehouses.id"))
 
     orders_details: Mapped[list["ProductOrderAssociation"]] = relationship(
         back_populates="product",

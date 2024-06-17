@@ -8,8 +8,8 @@ class WarehouseCreateSchema(BaseModel):
 
 class EmployeeAddSchema(BaseModel):
     employee_id: int
-    warehouse_name: str
+    warehouse_id: int
 
 
-class EmployeeDeleteSchema(EmployeeAddSchema):
-    pass
+class WarehouseUpdateSchema(BaseModel):
+    name: str | None = None

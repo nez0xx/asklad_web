@@ -13,6 +13,7 @@ class UnitedOrder(Base):
         return "united_orders"
 
     id: Mapped[str] = mapped_column(unique=True, primary_key=True)
+    warehouse_id: Mapped[int]
     orders_relationship: Mapped[list["Order"]] = relationship(back_populates="united_order_relationship")
 
 

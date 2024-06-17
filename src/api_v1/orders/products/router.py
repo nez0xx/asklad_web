@@ -27,10 +27,15 @@ async def get_all_products_view(
         user: User = Depends(get_current_user)
 
 ):
-    products = await crud.get_all_products(session, user.id)
+    products = await service.products_list(
+        session=session,
+        warehouse_id=warehouse_id,
+        employee_id=user.id
+    )
+
     return products
 
-
+'''
 @router.get(path="/")
 async def get_product_view(
         warehouse_id: int,
@@ -67,4 +72,4 @@ async def update_product_view(
     )
 
     return product
-
+'''

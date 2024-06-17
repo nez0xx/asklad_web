@@ -28,9 +28,11 @@ def send_message(email_to: str, html_message: str, subject: str = "Atomy WH"):
         server.starttls(context=context)
         server.login(sender_email, password)
         server.sendmail(settings.SMTP_LOGIN, email_to, message.as_string())
+        print("OK"*100)
 
     except Exception as e:
-        print(e)
+        print("-"*100)
+        print(e, "_"*100)
 
     finally:
         server.quit()

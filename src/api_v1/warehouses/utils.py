@@ -4,9 +4,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.warehouses.crud import get_warehouse_employee_association
 
 
-async def check_user_in_employees(session: AsyncSession, employee_id: int, warehouse_id: int, auto_error=True) -> bool:
+async def check_user_in_employees(
+        session: AsyncSession,
+        employee_id: int,
+        warehouse_id: int,
+        auto_error=True
+) -> bool:
 
-    association = get_warehouse_employee_association(
+    association = await get_warehouse_employee_association(
         session=session,
         user_id=employee_id,
         warehouse_id=warehouse_id

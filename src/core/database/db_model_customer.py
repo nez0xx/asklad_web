@@ -9,20 +9,12 @@ if TYPE_CHECKING:
 
 class Customer(Base):
 
-    __table_args__ = (
-        UniqueConstraint(
-            "atomy_id",
-            "warehouse_id",
-            name="idx_unique_atomy_id_warehouse_id",
-        ),
-    )
-
     name: Mapped[str]
 
     orders: Mapped[list["Order"]] = relationship(
         back_populates="customer_relationship"
     )
 
-    atomy_id: Mapped[str]
+    id: Mapped[str] = mapped_column(primary_key=True)
 
-    warehouse_id: Mapped[int] = mapped_column(ForeignKey("warehouses.id"))
+

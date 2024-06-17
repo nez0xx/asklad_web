@@ -6,10 +6,6 @@ from .products.schemas import ProductBase
 
 class OrderBase(BaseModel):
 
-    #united_order_id: str
-
-    #warehouse_id: int
-
     atomy_id: str
 
     customer_phone: str

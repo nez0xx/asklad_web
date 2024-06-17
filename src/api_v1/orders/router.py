@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import os
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.auth.service import get_current_user
 from src.api_v1.orders import crud, service
@@ -7,6 +10,8 @@ from src.core.database import User
 from src.core.database.db_helper import db_helper
 from fastapi.security import HTTPBearer
 from src.api_v1.auth.dependencies import check_user_is_verify
+import httpx
+
 
 
 http_bearer = HTTPBearer()
@@ -20,15 +25,77 @@ router = APIRouter(
 
 @router.get(path="/all")
 async def get_orders(
-        warehouse_id: int,
         is_given_out: bool | None = None,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
 
-    orders = await crud.get_all_orders(
+    orders = await service.all_orders_info(
+        session=session,
+        employee_id=user.id,
+        is_given_out=is_given_out
+    )
+
+    return orders
+
+
+@router.get(path="/{order_id}")
+async def get_order(
+    order_id: str,
+    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+    user: User = Depends(get_current_user)
+):
+
+    order = await service.order_info(
+        session=session,
+        employee_id=user.id,
+        order_id=order_id
+    )
+
+    return order
+
+
+@router.get(path="/united/all")
+async def get_united_orders(
+        warehouse_id: int,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+        user: User = Depends(get_current_user)
+):
+    orders = await service.get_united_orders(
         session=session,
         warehouse_id=warehouse_id,
+        employee_id=user.id
+    )
+
+    return orders
+
+
+@router.get(path="/united/{id}")
+async def get_united_order(
+    order_id: str,
+    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+    user: User = Depends(get_current_user)
+):
+    order = await service.united_order_info(
+        session=session,
+        order_id=order_id,
+        employee_id=user.id
+    )
+
+    return order
+
+
+@router.get(path="/wh/{warehouse_id}")
+async def get_orders_in_warehouse(
+        warehouse_id: int,
+        is_given_out: bool = None,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+        user: User = Depends(get_current_user)
+):
+    orders = await service.get_orders_in_warehouse(
+        session=session,
+        warehouse_id=warehouse_id,
+        employee_id=user.id,
         is_given_out=is_given_out
     )
 
@@ -38,7 +105,7 @@ async def get_orders(
 @router.post(
     path="/"
 )
-async def create_order_view(
+async def create_united_order_view(
         order_schema: UnitedOrderSchema,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
@@ -48,16 +115,29 @@ async def create_order_view(
     return {"The created order id": order_id}
 
 
+@router.post(
+    path="/upload"
+)
+async def upload_united_order_view(
+        file: UploadFile,
+        warehouse_id: int,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+        user: User = Depends(get_current_user)
+):
+    order_id = await service.add_orders_from_file(session, file, user.id, warehouse_id)
+    return {"The created order id": order_id}
+
+
 @router.post(path="/give_out")
 async def give_order_out(
         order_id: str,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
-    order = await crud.give_out(
+    order = await service.give_order_out(
         session=session,
         order_id=order_id,
-        owner_id=user.id
+        employee_id=user.id
     )
 
     if order:
@@ -69,20 +149,10 @@ async def give_order_out(
         )
 
 
-@router.get(path="/")
-async def get_order(
-    warehouse_id: int,
-    atomy_id: str,
-    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-    user: User = Depends(get_current_user)
-):
-    order = await crud.get_order_by_id(
-        session=session,
-        id=atomy_id,
-        warehouse_id=warehouse_id
-    )
 
-    return order
+
+
+
 
 
 
