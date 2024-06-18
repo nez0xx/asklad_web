@@ -3,7 +3,8 @@ FROM python:3.12
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y sqlite3 && \
-    apt-get -y install uvicorn
+    apt-get -y install uvicorn && \
+    ale
 
 WORKDIR /home/api
 

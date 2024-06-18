@@ -1,13 +1,15 @@
+import os
 from pathlib import Path
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).parent.parent.parent
+DOTENV = os.path.join(BASE_DIR, ".env")
 
 
 class SettingsWithLoadEnvVars(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=f'{BASE_DIR}/.env',
+        env_file=DOTENV,
         env_file_encoding='utf-8',
         extra='ignore'
     )
