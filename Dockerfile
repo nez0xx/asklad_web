@@ -7,7 +7,7 @@ RUN apt-get update && \
 
 WORKDIR /home/api
 
-COPY pyproject.toml poetry.lock /home/api
+COPY pyproject.toml /home/api
 
 RUN pip3.12 install --no-cache-dir poetry
 
