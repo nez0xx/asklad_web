@@ -132,3 +132,17 @@ async def give_out(session: AsyncSession, order_id: str, given_by: int):
 
     return order
 
+
+async def get_orders_in_united_order(
+        session: AsyncSession,
+        united_order_id: str
+) -> list[Order]:
+
+    stmt = select(Order).options(selectinload(Order.products_details)).where(Order.united_order_id == united_order_id)
+    result = await session.execute(stmt)
+    orders = list(result.scalars())
+
+    return orders
+
+
+

@@ -25,6 +25,18 @@ class OrderListItem(BaseModel):
 
     customer_phone: str
 
+# ДЛЯ ОТПРАВКИ АПИ ТГ БОТА
+class ProductSchema(BaseModel):
+    title: str
+    amount: int
+
+
+class OrderInfoSchema(BaseModel):
+    customer_phone: str
+    order_id: str
+    warehouse_name: str
+    products_list: list[ProductSchema]
+
 
 
 

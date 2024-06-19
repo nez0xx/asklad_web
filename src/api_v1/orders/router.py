@@ -30,7 +30,7 @@ async def get_orders(
         user: User = Depends(get_current_user)
 ):
 
-    orders = await service.all_orders_info(
+    orders = await service.get_all_orders(
         session=session,
         employee_id=user.id,
         is_given_out=is_given_out
@@ -124,8 +124,8 @@ async def upload_united_order_view(
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
-    order_id = await service.add_orders_from_file(session, file, user.id, warehouse_id)
-    return {"The created order id": order_id}
+    orders_ids = await service.add_orders_from_file(session, file, user.id, warehouse_id)
+    return {"The created orders": orders_ids}
 
 
 @router.post(path="/give_out")
@@ -147,6 +147,17 @@ async def give_order_out(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"order with id={order_id} not exists"
         )
+
+
+@router.post(path="/notify")
+async def notify_customers(
+        united_order_id: str,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
+):
+    await service.notify_customers(
+        session=session,
+        united_order_id=united_order_id
+    )
 
 
 

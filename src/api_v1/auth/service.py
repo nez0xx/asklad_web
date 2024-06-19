@@ -152,7 +152,7 @@ async def authenticate_user(
 
 
 def create_confirm_email_link(token: str):
-    return f"sir.ru:8000/auth/confirm/{token}"
+    return f"{settings.HOST}/auth/confirm/{token}"
 
 
 async def register_user(session: AsyncSession, user_schema: RegisterUser):
@@ -167,7 +167,7 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
     confirm_token = utils.encode_jwt(payload={"email": user_schema.email})
 
     link = create_confirm_email_link(confirm_token)
-
+    print(link)
     html = u'''\
     <html>
         <head></head>

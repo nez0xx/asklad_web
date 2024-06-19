@@ -27,7 +27,7 @@ def send_message(email_to: str, html_message: str, subject: str = "Atomy WH"):
 
         server.starttls(context=context)
         server.login(sender_email, password)
-        server.sendmail(settings.SMTP_LOGIN, email_to, message.as_string())
+        server.sendmail(sender_email, email_to, message.as_string())
         print("OK"*100)
 
     except Exception as e:
