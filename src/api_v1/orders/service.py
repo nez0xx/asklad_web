@@ -203,15 +203,24 @@ async def notify_customers(
             detail=f"United order with id {united_order_id} does not exist"
         )
 
+    if united_order.delivered:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail=f"Order {united_order.id} already has been delivered"
+        )
+
     warehouse = await get_warehouse_by_id(
         session=session,
         warehouse_id=united_order.warehouse_id
     )
+
     orders = await crud.get_orders_in_united_order(
         session=session,
         united_order_id=united_order_id
     )
+
     data = []
+
     for order in orders:
         order_info = OrderInfoSchema(
             customer_phone=normalize_phone(order.customer_phone),
@@ -233,7 +242,15 @@ async def notify_customers(
                 )
             )
         data.append(order_info.model_dump())
+
     request = requests.post(url="http://127.0.0.1:9000", json=data)
+
+    if request.status_code == 200:
+        await crud.delivery_united_order(
+            session=session,
+            united_order=united_order
+        )
+
     return request.status_code
 
 

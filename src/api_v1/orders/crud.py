@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -143,6 +145,15 @@ async def get_orders_in_united_order(
     orders = list(result.scalars())
 
     return orders
+
+
+async def delivery_united_order(
+        session: AsyncSession,
+        united_order: UnitedOrder
+):
+    united_order.delivered = True
+    united_order.delivery_date = datetime.now()
+    await session.commit()
 
 
 
