@@ -111,10 +111,7 @@ def parse(sheet: Worksheet) -> list[UnitedOrder]:
 
             product_id = sheet[f"{product_id_column}{row}"].value
             # строка с product_title это объединенная строка, поэтому приходится вытаскивать значения как из матрицы
-            print(product_title_column)
-            print(sheet[f"{product_title_column}{row}"])
             product_title = sheet[f"{product_title_column}{row}"].value
-            print(product_title)
             product_amount = sheet[f"{product_amount_column}{row}"].value
 
             product = Product(

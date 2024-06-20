@@ -24,7 +24,7 @@ router = APIRouter(
 
 
 @router.get(path="/all")
-async def get_orders(
+async def get_all_orders(
         is_given_out: bool | None = None,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
@@ -55,8 +55,8 @@ async def get_order(
     return order
 
 
-@router.get(path="/united/all")
-async def get_united_orders(
+@router.get(path="/wh/united/{warehouse_id}")
+async def get_united_orders_in_warehouse(
         warehouse_id: int,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
@@ -100,19 +100,6 @@ async def get_orders_in_warehouse(
     )
 
     return orders
-
-
-@router.post(
-    path="/"
-)
-async def create_united_order_view(
-        order_schema: UnitedOrderSchema,
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user)
-):
-    order_id = await service.add_orders(session, order_schema, employee_id=user.id)
-
-    return {"The created order id": order_id}
 
 
 @router.post(

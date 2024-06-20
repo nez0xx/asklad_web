@@ -35,41 +35,19 @@ async def get_all_products_view(
 
     return products
 
-'''
-@router.get(path="/")
-async def get_product_view(
-        warehouse_id: int,
-        atomy_id: str,
-        user: User = Depends(get_current_user),
+
+@router.patch(
+    path="/change_amount"
+)
+async def change_product_amount_view(
+        order_id: str,
+        product_id: str,
+        amount: int,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
 ):
-
-    product = await service.get_product(
+    await service.change_product_amount(
         session=session,
-        atomy_id=atomy_id,
-        employee_id=user.id,
-        warehouse_id=warehouse_id
+        order_id=order_id,
+        product_id=product_id,
+        amount=amount
     )
-
-    return product
-
-
-@router.patch(path="/")
-async def update_product_view(
-        warehouse_id: int,
-        atomy_id: str,
-        product_schema: ProductUpdateSchema,
-        user: User = Depends(get_current_user),
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
-):
-
-    product = await service.update_product(
-        session=session,
-        atomy_id=atomy_id,
-        employee_id=user.id,
-        warehouse_id=warehouse_id,
-        schema=product_schema
-    )
-
-    return product
-'''

@@ -26,7 +26,6 @@ async def get_united_order(session: AsyncSession, united_order_id: str):
         .options(selectinload(UnitedOrder.orders_relationship))
         .where(UnitedOrder.id == united_order_id)
     )
-    print("ывсе норм", united_order_id)
     result = await session.execute(stmt)
     order = result.scalar_one_or_none()
 

@@ -165,7 +165,7 @@ async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee
 
     # json объекты
     united_orders = parse_excel(full_filename)
-
+    os.remove(full_filename)
     united_orders_ids = []
 
     # проверка на отстутствие заказов в бд
@@ -176,7 +176,7 @@ async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee
         if united_order:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Order with id {united_order_id} does not exist"
+                detail=f"Order with id {united_order_id} already exists"
             )
 
     for united_order in united_orders:
@@ -202,7 +202,7 @@ async def notify_customers(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"United order with id {united_order_id} does not exist"
         )
-
+    # если заказ уже доставлен и юзеров уведомили, кидаем ошибку
     if united_order.delivered:
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,

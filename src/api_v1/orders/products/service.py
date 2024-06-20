@@ -11,60 +11,6 @@ exc404 = HTTPException(
     detail=f"Product with this id does not exist in the warehouse"
 )
 
-'''
-async def get_product(
-        session: AsyncSession,
-        atomy_id: str,
-        warehouse_id: int,
-        employee_id
-):
-
-    await check_user_in_employees(
-        session=session,
-        employee_id=employee_id,
-        warehouse_id=warehouse_id
-    )
-
-    product = await crud.get_product_by_atomy_id(
-        session=session,
-        atomy_id=atomy_id,
-        warehouse_id=warehouse_id
-    )
-
-    if product is None:
-        raise exc404
-
-
-async def update_product(
-        session: AsyncSession,
-        atomy_id: str,
-        employee_id: int,
-        warehouse_id: int,
-        schema: ProductUpdateSchema
-):
-    await check_user_in_employees(
-        session=session,
-        employee_id=employee_id,
-        warehouse_id=warehouse_id
-    )
-
-    product = await crud.get_product_by_atomy_id(
-        session=session,
-        atomy_id=atomy_id,
-        warehouse_id=warehouse_id
-    )
-
-    if product is None:
-        raise exc404
-
-    product = await crud.update_product(
-        session=session,
-        product=product,
-        product_update=schema
-    )
-
-    return product
-'''
 
 async def products_list(
         session: AsyncSession,
@@ -76,13 +22,45 @@ async def products_list(
         warehouse_id=warehouse_id,
         employee_id=employee_id
     )
-    print(employee_id)
-    results = await crud.get_all_products(session, warehouse_id)
+
+    results = await crud.get_products_in_warehouse(session, warehouse_id)
     products = []
 
     for elem in results:
         products.append(ProductInWarehouseSchema(title=elem[0].product.title, amount=elem[1]))
-    print(products)
+
     return products
+
+
+async def change_product_amount(
+        session: AsyncSession,
+        order_id: str,
+        product_id: str,
+        amount: int
+):
+    if amount < 1:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Amount has be >= 1"
+        )
+
+    association = await crud.get_product_order_association(
+        session=session,
+        order_id=order_id,
+        product_id=product_id
+    )
+
+    if association is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"ProductAssociation order_id={order_id} product_id={product_id} does not exist"
+        )
+
+    await crud.change_product_amount(
+        session=session,
+        association=association,
+        amount=amount
+    )
+
 
 

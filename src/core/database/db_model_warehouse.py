@@ -9,6 +9,8 @@ from src.core.database.db_model_warehouse_employee_association import WarehouseE
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .db_model_order import Order
+    from .db_model_united_order import UnitedOrder
+
 
 class Warehouse(Base):
 
@@ -21,6 +23,8 @@ class Warehouse(Base):
     )
 
     orders_relationship: Mapped[list["Order"]] = relationship()
+
+    united_orders_relationship: Mapped[list["UnitedOrder"]] = relationship(back_populates="warehouse_relationship")
 
     created_at: Mapped[datetime] = mapped_column(
         default=datetime.now(tz=timezone.utc),
