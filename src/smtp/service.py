@@ -7,8 +7,8 @@ from src.core import settings
 
 smtp_server = "smtp.mail.ru"
 port = 25 # For starttls
-sender_email = settings.SMTP_LOGIN
-password = settings.SMTP_PASSWORD
+# sender_email = settings.SMTP_LOGIN
+# password = settings.SMTP_PASSWORD
 
 
 def send_message(email_to: str, html_message: str, subject: str = "Atomy WH"):
@@ -26,8 +26,8 @@ def send_message(email_to: str, html_message: str, subject: str = "Atomy WH"):
     try:
 
         server.starttls(context=context)
-        server.login(sender_email, password)
-        server.sendmail(sender_email, email_to, message.as_string())
+        #server.login(sender_email, password)
+        #server.sendmail(sender_email, email_to, message.as_string())
         print("OK"*100)
 
     except Exception as e:
