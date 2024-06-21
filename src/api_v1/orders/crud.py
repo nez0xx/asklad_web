@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -108,7 +108,7 @@ async def get_all_orders(
     return [order for order in scalars_result]
 
 
-async def give_out(session: AsyncSession, order_id: str, given_by: int):
+async def give_out(session: AsyncSession, order_id: str, given_by: int, comment: str | None) -> Order | None:
 
     stmt = (
         select(Order)
@@ -126,9 +126,9 @@ async def give_out(session: AsyncSession, order_id: str, given_by: int):
                 session=session,
                 product_id=assoc.product_id
                 )
-
+        order.comment = comment
         order.is_given_out = True
-        order.given_by = given_by # кем выдан
+        order.given_by = given_by  # кем выдан
         await session.commit()
 
     return order
@@ -151,7 +151,7 @@ async def delivery_united_order(
         united_order: UnitedOrder
 ):
     united_order.delivered = True
-    united_order.delivery_date = datetime.now()
+    united_order.delivery_date = date.today()
     await session.commit()
 
 

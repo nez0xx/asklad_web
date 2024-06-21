@@ -36,4 +36,6 @@ class Order(Base):
         back_populates="order"
     )
 
-    given_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    given_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)  # кем выдан
+
+    comment: Mapped[str] = mapped_column(nullable=True)

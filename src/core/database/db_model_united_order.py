@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date
 
 from sqlalchemy import func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
@@ -24,7 +24,7 @@ class UnitedOrder(Base):
 
     orders_relationship: Mapped[list["Order"]] = relationship(back_populates="united_order_relationship")
 
-    delivery_date: Mapped[datetime] = mapped_column(
+    delivery_date: Mapped[date] = mapped_column(
         nullable=True
     )
 

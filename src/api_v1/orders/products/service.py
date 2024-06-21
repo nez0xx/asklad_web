@@ -38,10 +38,10 @@ async def change_product_amount(
         product_id: str,
         amount: int
 ):
-    if amount < 1:
+    if amount < 0:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Amount has be >= 1"
+            detail="Amount has be >= 0"
         )
 
     association = await crud.get_product_order_association(

@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy import func
 from src.core.database import Product, Order, UnitedOrder
@@ -61,7 +61,13 @@ async def get_product_by_id(session: AsyncSession, product_id: int):
 
 
 async def change_product_amount(session: AsyncSession, association: ProductOrderAssociation, amount: int):
+
     association.amount = amount
+
+    if amount == 0:
+        stmt = delete(ProductOrderAssociation).where(ProductOrderAssociation.id == association.id)
+        await session.execute(stmt)
+
     await session.commit()
 
 

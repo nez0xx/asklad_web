@@ -25,7 +25,7 @@ router = APIRouter(
 
 @router.get(path="/all")
 async def get_all_orders(
-        is_given_out: bool | None = None,
+        is_given_out: bool = None,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
@@ -118,13 +118,15 @@ async def upload_united_order_view(
 @router.post(path="/give_out")
 async def give_order_out(
         order_id: str,
+        comment: str,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
     order = await service.give_order_out(
         session=session,
         order_id=order_id,
-        employee_id=user.id
+        employee_id=user.id,
+        comment=comment
     )
 
     if order:

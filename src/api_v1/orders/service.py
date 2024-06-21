@@ -45,6 +45,12 @@ async def add_orders(session: AsyncSession, united_order_schema: UnitedOrderSche
                 detail=f"Order with id {order_schema.atomy_id} already exists"
             )
 
+    await create_united_order(
+        session,
+        united_order_schema.united_order_id,
+        warehouse_id=united_order_schema.warehouse_id
+    )
+
     for order_schema in united_order_schema.orders:
 
         customer = await get_or_create_customer(
@@ -60,12 +66,6 @@ async def add_orders(session: AsyncSession, united_order_schema: UnitedOrderSche
             united_order_id=united_order_schema.united_order_id,
             warehouse_id=united_order_schema.warehouse_id
         )
-
-    await create_united_order(
-        session,
-        united_order_schema.united_order_id,
-        warehouse_id=united_order_schema.warehouse_id
-    )
 
     return united_order_schema.united_order_id
 
@@ -141,7 +141,7 @@ async def get_united_orders(session: AsyncSession, warehouse_id: int, employee_i
     return orders
 
 
-async def give_order_out(session: AsyncSession, order_id: str, employee_id: int):
+async def give_order_out(session: AsyncSession, order_id: str, employee_id: int, comment: str | None):
     order = await crud.get_order_by_id(session=session, order_id=order_id)
     if order is None:
         raise HTTPException(
@@ -151,7 +151,7 @@ async def give_order_out(session: AsyncSession, order_id: str, employee_id: int)
 
     warehouse_id = order.warehouse_id
     await check_user_in_employees(session=session, warehouse_id=warehouse_id, employee_id=employee_id)
-    order = await crud.give_out(session=session, order_id=order_id, given_by=employee_id)
+    order = await crud.give_out(session=session, order_id=order_id, given_by=employee_id, comment=comment)
     return order
 
 
