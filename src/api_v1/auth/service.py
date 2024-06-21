@@ -178,7 +178,7 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
     </html>
     ''' % link
 
-    send_message(user_schema.email, html_message=html)
+    #send_message(user_schema.email, html_message=html)
 
     return user
 

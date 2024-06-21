@@ -220,7 +220,7 @@ async def notify_customers(
     )
 
     data = []
-
+    '''
     for order in orders:
         order_info = OrderInfoSchema(
             customer_phone=normalize_phone(order.customer_phone),
@@ -252,6 +252,8 @@ async def notify_customers(
         )
 
     return request.status_code
+    '''
+    return 1
 
 
 

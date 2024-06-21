@@ -30,9 +30,9 @@ class Settings(SettingsWithLoadEnvVars):
 
     db_url: str = f'sqlite+aiosqlite:///{BASE_DIR}/db.sqlite3'
 
-    SMTP_LOGIN: str
-    SMTP_PASSWORD: str
-    HOST: str
+    #SMTP_LOGIN: str
+    #SMTP_PASSWORD: str
+    #HOST: str
     test_db_url: str = f'sqlite+aiosqlite:///{BASE_DIR}/test_db.sqlite3'
 
 
