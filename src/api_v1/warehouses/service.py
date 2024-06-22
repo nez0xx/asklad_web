@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.warehouses import crud
-from src.api_v1.auth.crud import get_user_by_email, get_user_by_id
-from src.api_v1.warehouses.crud import get_warehouse_by_id
+from src.api_v1.auth.crud import get_user_by_id
+from src.api_v1.utils import encode_jwt, decode_jwt
 from src.api_v1.warehouses.schemas import WarehouseCreateSchema, WarehouseUpdateSchema
 from fastapi import HTTPException, status
 
@@ -10,6 +10,11 @@ from src.core.database import Warehouse
 from src.core.database.db_model_warehouse_employee_association import WarehouseEmployeeAssociation
 
 from src.api_v1.exceptions import WarehouseDoesNotExist
+
+from src.core.settings import settings
+from src.smtp import send_message
+
+from sqlalchemy.exc import IntegrityError
 
 
 async def check_user_is_owner(session: AsyncSession, warehouse_id: int, owner_id: int):
@@ -43,7 +48,7 @@ async def create_warehouse(session: AsyncSession, schema: WarehouseCreateSchema)
     return warehouse
 
 
-async def add_employee(session: AsyncSession, employee_id: int, warehouse: Warehouse):
+async def send_employee_invite(session: AsyncSession, employee_id: int, warehouse: Warehouse):
     employee = await get_user_by_id(session, employee_id)
     if employee is None:
         raise HTTPException(
@@ -65,11 +70,36 @@ async def add_employee(session: AsyncSession, employee_id: int, warehouse: Wareh
             detail=f"User with id {employee_id} already manage warehouse"
         )
 
-    await crud.add_employee(
-        session=session,
-        employee_id=employee_id,
-        warehouse_id=warehouse.id
+    token = encode_jwt(
+        payload={
+            "employee_id": employee_id,
+            "warehouse_id": warehouse.id
+        },
+        expire_minutes=60*24*3
     )
+    invite_link = f"http://{settings.HOST}/invite/{token}"
+    print(invite_link)
+    send_message(email_to=employee.email, html_message=invite_link, subject="Invite to warehouse")
+
+
+async def confirm_employee_invite(
+        session: AsyncSession,
+        token: str
+):
+    data = decode_jwt(token)
+
+    try:
+        await crud.add_employee(
+            session=session,
+            employee_id=data["employee_id"],
+            warehouse_id=data["warehouse_id"]
+        )
+    except IntegrityError as e:
+        print(IntegrityError)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Invite has already been accepted"
+        )
 
 
 async def warehouse_info(session: AsyncSession, employee_id: int, warehouse_id: int):

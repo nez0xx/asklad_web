@@ -5,6 +5,7 @@ from fastapi.security import HTTPBearer, OAuth2PasswordBearer
 from jwt import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import src.api_v1.utils
 from src.api_v1.auth.crud import get_user_by_email
 
 from src.api_v1.auth import crud, utils
@@ -30,7 +31,7 @@ oauth2_scheme = OAuth2PasswordBearer(
 def get_current_token_payload(token=Depends(oauth2_scheme)):
 
     try:
-        payload = utils.decode_jwt(token)
+        payload = src.api_v1.utils.decode_jwt(token)
 
     except InvalidTokenError as e:
         raise HTTPException(
@@ -77,7 +78,7 @@ def create_jwt(
 
     payload[TOKEN_TYPE_FIELD] = token_type
 
-    token = utils.encode_jwt(payload, expire_minutes=expire_minutes)
+    token = src.api_v1.utils.encode_jwt(payload, expire_minutes=expire_minutes)
 
     return token
 
@@ -139,7 +140,7 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exists")
     user = await crud.create_user(session, user_schema=user_schema)
 
-    confirm_token = utils.encode_jwt(payload={"email": user_schema.email})
+    confirm_token = src.api_v1.utils.encode_jwt(payload={"email": user_schema.email})
 
     link = create_confirm_email_link(confirm_token)
     print(link)
@@ -160,7 +161,7 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
 
 async def confirm_email(session: AsyncSession, token: str):
 
-    payload = utils.decode_jwt(token)
+    payload = src.api_v1.utils.decode_jwt(token)
 
     user = await crud.get_user_by_email(
         session=session,

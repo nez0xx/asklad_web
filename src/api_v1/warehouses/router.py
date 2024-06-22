@@ -17,6 +17,54 @@ router = APIRouter(
     dependencies=[Depends(http_bearer), Depends(check_user_is_verify)]
 )
 
+invite_router = APIRouter(
+    prefix="/invite",
+    tags=["Confirm invite"]
+)
+
+
+@invite_router.get(path="/{token}")
+async def confirm_employee_invite(
+        token: str,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
+):
+    await service.confirm_employee_invite(
+        session=session,
+        token=token
+    )
+
+
+@router.get(path="/")
+async def get_user_available_warehouse_view(
+    user: User = Depends(get_current_user),
+    warehouse: Warehouse = Depends(get_warehouse_dependency)
+):
+    data = {"warehouse": warehouse}
+
+    if warehouse:
+        if warehouse.owner_id == user.id:
+            data["role"] = "own"
+        else:
+            data["role"] = "emp"
+    return data
+
+
+@router.get(
+    path="/{warehouse_id}"
+)
+async def warehouse_info_view(
+        warehouse_id: int,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+        user: User = Depends(get_current_user)
+):
+    warehouse = await service.warehouse_info(
+        session=session,
+        employee_id=user.id,
+        warehouse_id=warehouse_id
+    )
+    print(warehouse)
+    return warehouse
+
 
 @router.post(
     path="/"
@@ -38,57 +86,11 @@ async def add_employee_view(
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         warehouse: Warehouse = Depends(get_own_warehouse_dependency)
 ):
-    await service.add_employee(
+    await service.send_employee_invite(
         session=session,
         employee_id=employee_id,
         warehouse=warehouse
     )
-
-
-@router.get(
-    path="/{warehouse_id}"
-)
-async def warehouse_info_view(
-        warehouse_id: int,
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user)
-):
-    warehouse = await service.warehouse_info(
-        session=session,
-        employee_id=user.id,
-        warehouse_id=warehouse_id
-    )
-    print(warehouse)
-    return warehouse
-
-
-@router.delete(path="/employee")
-async def delete_employee_view(
-        employee_id: int,
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user),
-        warehouse: Warehouse = Depends(get_own_warehouse_dependency)
-):
-    await service.delete_employee(
-        session=session,
-        employee_id=employee_id,
-        warehouse=warehouse
-    )
-
-
-@router.get(path="/")
-async def get_user_available_warehouse_view(
-    user: User = Depends(get_current_user),
-    warehouse: Warehouse = Depends(get_warehouse_dependency)
-):
-    data = {"warehouse": warehouse}
-
-    if warehouse:
-        if warehouse.owner_id == user.id:
-            data["role"] = "own"
-        else:
-            data["role"] = "emp"
-    return data
 
 
 @router.patch(path="/")
@@ -113,5 +115,19 @@ async def delete_warehouse(
 ):
     await service.delete_warehouse(
         session=session,
+        warehouse=warehouse
+    )
+
+
+@router.delete(path="/employee")
+async def delete_employee_view(
+        employee_id: int,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+        user: User = Depends(get_current_user),
+        warehouse: Warehouse = Depends(get_own_warehouse_dependency)
+):
+    await service.delete_employee(
+        session=session,
+        employee_id=employee_id,
         warehouse=warehouse
     )

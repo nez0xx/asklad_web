@@ -1,5 +1,6 @@
 __all__ = (
-    "router"
+    "router",
+    "invite_router"
 )
 
-from .router import router
+from .router import router, invite_router
