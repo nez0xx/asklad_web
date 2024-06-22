@@ -6,10 +6,10 @@ from . import service
 
 
 from src.api_v1.auth.service import (
-    get_current_user,
     create_access_token,
     get_current_user_for_refresh
 )
+from .dependencies import get_current_user
 
 from src.api_v1.auth.schemas import (
     UserSchema,

@@ -1,10 +1,12 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.api_v1.exceptions import WarehouseDoesNotExist
 from src.api_v1.orders.products import crud
 from src.api_v1.orders.products.schemas import ProductUpdateSchema, ProductInWarehouseSchema
+from src.api_v1.warehouses.crud import get_user_available_warehouse
 from src.api_v1.warehouses.utils import check_user_in_employees
-
+from src.core.database import Warehouse
 
 exc404 = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND,
@@ -14,16 +16,12 @@ exc404 = HTTPException(
 
 async def products_list(
         session: AsyncSession,
-        warehouse_id: int,
-        employee_id: int
+        warehouse: Warehouse
 ):
-    await check_user_in_employees(
-        session=session,
-        warehouse_id=warehouse_id,
-        employee_id=employee_id
-    )
+    if warehouse is None:
+        raise WarehouseDoesNotExist()
 
-    results = await crud.get_products_in_warehouse(session, warehouse_id)
+    results = await crud.get_products_in_warehouse(session, warehouse.id)
     products = []
 
     for elem in results:

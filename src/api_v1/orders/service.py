@@ -5,14 +5,15 @@ from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api_v1.orders import crud, utils
-from src.api_v1.orders.crud import get_order_by_id, create_order, create_united_order, get_united_order
+#from src.api_v1.orders.crud import get_order_by_id, create_order, create_united_order, get_united_order
 from src.api_v1.orders.customers.crud import get_or_create_customer
 from src.api_v1.orders.products.crud import get_product_by_id
 from src.api_v1.orders.schemas import OrderBase, UnitedOrderSchema, OrderInfoSchema, ProductSchema
-from src.api_v1.warehouses.crud import get_user_warehouses, get_warehouse_by_id
+from src.api_v1.orders.utils import parse_excel
+from src.api_v1.warehouses.crud import get_user_own_warehouse, get_warehouse_by_id, get_user_available_warehouse
 from src.api_v1.warehouses.utils import check_user_in_employees
 from src.core.settings import BASE_DIR
-from src.parser import parse_excel
+from src.parser import parse
 from src.parser.utils import normalize_phone
 
 
@@ -80,12 +81,6 @@ async def order_info(
         order_id=order_id
     )
 
-    await check_user_in_employees(
-        session=session,
-        employee_id=employee_id,
-        warehouse_id=order.warehouse_id
-    )
-
     return order
 
 
@@ -94,17 +89,20 @@ async def get_all_orders(
         employee_id: int,
         is_given_out: bool | None
 ):
-    warehouses = await get_user_warehouses(session, employee_id)
-    orders_list = []
-    for warehouse in warehouses:
-        orders = await crud.get_all_orders(
+    warehouse = await get_user_available_warehouse(session, employee_id)
+    print(warehouse, "7"*100)
+    if warehouse is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="You dont manage any warehouse"
+        )
+    orders = await crud.get_all_orders(
             session=session,
             warehouse_id=warehouse.id,
             is_given_out=is_given_out
         )
-        orders_list.extend(orders)
 
-    return orders_list
+    return orders
 
 
 async def get_orders_in_warehouse(
@@ -113,7 +111,6 @@ async def get_orders_in_warehouse(
         employee_id: int,
         is_given_out: bool = None
 ):
-    await check_user_in_employees(session=session, warehouse_id=warehouse_id, employee_id=employee_id)
     orders = await crud.get_all_orders(
         session=session,
         warehouse_id=warehouse_id,
@@ -134,10 +131,11 @@ async def united_order_info(session: AsyncSession, order_id: str, employee_id: i
     return order
 
 
-async def get_united_orders(session: AsyncSession, warehouse_id: int, employee_id: int):
-    await check_user_in_employees(session=session, warehouse_id=warehouse_id, employee_id=employee_id)
-
-    orders = await crud.get_united_orders(session=session, warehouse_id=warehouse_id)
+async def get_united_orders(session: AsyncSession, warehouse_id: int):
+    orders = await crud.get_united_orders(
+        session=session,
+        warehouse_id=warehouse_id
+    )
     return orders
 
 
@@ -156,16 +154,8 @@ async def give_order_out(session: AsyncSession, order_id: str, employee_id: int,
 
 
 async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee_id: int, warehouse_id: int):
-    content = await file.read()
-    date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    filename = f"{date}_{file.filename}"
-    full_filename = os.path.join(BASE_DIR, 'uploaded_files', filename)
-    with open(full_filename, "wb") as f:
-        f.write(content)
 
-    # json объекты
-    united_orders = parse_excel(full_filename)
-    os.remove(full_filename)
+    united_orders = await parse_excel(file)
     united_orders_ids = []
 
     # проверка на отстутствие заказов в бд
@@ -253,7 +243,22 @@ async def notify_customers(
 
     return request.status_code
     '''
+    await crud.delivery_united_order(
+        session=session,
+        united_order=united_order
+    )
     return 1
+
+
+async def delete_united_order(
+        session: AsyncSession,
+        united_order_id: str
+):
+    await crud.delete_united_order(
+        session=session,
+        united_order_id=united_order_id
+    )
+
 
 
 

@@ -20,8 +20,10 @@ def get_united_orders_id(sheet: Worksheet):
 
 def get_start_row(sheet):
     united_orders_id = get_united_orders_id(sheet)
+    print(united_orders_id)
     min_row = find(sheet=sheet, value=united_orders_id[0])["row"]
     for order_id in united_orders_id:
+        print(order_id, "-"*100)
         row = find(sheet=sheet, value=order_id)["row"]
         if row < min_row:
             min_row = row
@@ -63,7 +65,7 @@ def get_templates_of_orders_id(sheet: Worksheet) -> list[str]:
     return templates
 
 
-def parse(sheet: Worksheet) -> list[UnitedOrder]:
+def parse_worksheet(sheet: Worksheet) -> list[UnitedOrder]:
     id_templates = get_templates_of_orders_id(sheet)
     start_row = get_start_row(sheet)
     last_row = get_last_row(sheet)
@@ -126,11 +128,11 @@ def parse(sheet: Worksheet) -> list[UnitedOrder]:
     return united_orders
 
 
-def parse_excel(filename: str):
+def parse(filename: str):
     book = load_workbook(filename=filename, data_only=True)
     worksheet: Worksheet = book["Лист_1"]
 
-    united_orders = parse(worksheet)
+    united_orders = parse_worksheet(worksheet)
     united_orders_json = []
 
     for elem in united_orders:

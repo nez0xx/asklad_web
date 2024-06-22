@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.api_v1.auth.service import get_current_user
 from .. import crud
-from src.core.database import User
+from src.core.database import User, Warehouse
 from src.core.database.db_helper import db_helper
 from . import crud, service
 from fastapi.security import HTTPBearer
 from .schemas import ProductUpdateSchema
-from src.api_v1.auth.dependencies import check_user_is_verify
+from src.api_v1.auth.dependencies import check_user_is_verify, get_current_user
+from ...warehouses.dependencies import get_warehouse_dependency
 
 http_bearer = HTTPBearer()
 
@@ -22,15 +22,13 @@ router = APIRouter(
     path="/all"
 )
 async def get_all_products_view(
-        warehouse_id: int,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user)
+        warehouse: Warehouse = Depends(get_warehouse_dependency)
 
 ):
     products = await service.products_list(
         session=session,
-        warehouse_id=warehouse_id,
-        employee_id=user.id
+        warehouse=warehouse
     )
 
     return products

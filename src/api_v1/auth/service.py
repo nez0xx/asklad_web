@@ -42,31 +42,6 @@ def get_current_token_payload(token=Depends(oauth2_scheme)):
     return payload
 
 
-async def get_current_user(
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        payload=Depends(get_current_token_payload)
-):
-
-    unauthed_exc = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="invalid username or password",
-    )
-
-    if payload[TOKEN_TYPE_FIELD] != ACCESS_TOKEN_TYPE:
-
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid token type: access expected"
-        )
-
-    user_email = payload["email"]
-    user = await get_user_by_email(session, user_email)
-
-    if user:
-        return user
-    raise unauthed_exc
-
-
 async def get_current_user_for_refresh(
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         payload=Depends(get_current_token_payload)
@@ -178,7 +153,7 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
     </html>
     ''' % link
 
-    #send_message(user_schema.email, html_message=html)
+    send_message(user_schema.email, html_message=html)
 
     return user
 

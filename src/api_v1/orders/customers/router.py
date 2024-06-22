@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.api_v1.auth.service import get_current_user
 from src.core.database import User
 from src.core.database.db_helper import db_helper
 from . import service
 from .crud import get_customer_or_none
 from fastapi.security import HTTPBearer
-from src.api_v1.auth.dependencies import check_user_is_verify
+from src.api_v1.auth.dependencies import check_user_is_verify, get_current_user
 from .schemas import CustomersListSchema, CustomerGetSchema
 from .validators import validate_customers_list
 

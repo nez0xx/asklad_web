@@ -29,10 +29,10 @@ class Settings(SettingsWithLoadEnvVars):
     auth_jwt: AuthJWT = AuthJWT()
 
     db_url: str = f'sqlite+aiosqlite:///{BASE_DIR}/db.sqlite3'
-
+    PARSER_URL: str
     #SMTP_LOGIN: str
     #SMTP_PASSWORD: str
-    #HOST: str
+    HOST: str
     test_db_url: str = f'sqlite+aiosqlite:///{BASE_DIR}/test_db.sqlite3'
 
 

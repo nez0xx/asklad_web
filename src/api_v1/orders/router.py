@@ -3,13 +3,13 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.api_v1.auth.service import get_current_user
 from src.api_v1.orders import crud, service
 from src.api_v1.orders.schemas import OrderBase, UnitedOrderSchema
-from src.core.database import User
+from src.api_v1.warehouses.dependencies import get_own_warehouse_dependency, get_warehouse_dependency
+from src.core.database import User, Warehouse
 from src.core.database.db_helper import db_helper
 from fastapi.security import HTTPBearer
-from src.api_v1.auth.dependencies import check_user_is_verify
+from src.api_v1.auth.dependencies import check_user_is_verify, get_current_user
 import httpx
 
 
@@ -39,32 +39,17 @@ async def get_all_orders(
     return orders
 
 
-@router.get(path="/{order_id}")
-async def get_order(
-    order_id: str,
-    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-    user: User = Depends(get_current_user)
-):
-
-    order = await service.order_info(
-        session=session,
-        employee_id=user.id,
-        order_id=order_id
-    )
-
-    return order
 
 
-@router.get(path="/wh/united/{warehouse_id}")
-async def get_united_orders_in_warehouse(
-        warehouse_id: int,
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user)
+
+@router.get(path="/united")
+async def get_all_united_orders(
+        warehouse: Warehouse = Depends(get_warehouse_dependency),
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
 ):
     orders = await service.get_united_orders(
         session=session,
-        warehouse_id=warehouse_id,
-        employee_id=user.id
+        warehouse_id=warehouse.id
     )
 
     return orders
@@ -85,21 +70,20 @@ async def get_united_order(
     return order
 
 
-@router.get(path="/wh/{warehouse_id}")
-async def get_orders_in_warehouse(
-        warehouse_id: int,
-        is_given_out: bool = None,
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user)
+@router.get(path="/{order_id}")
+async def get_order(
+    order_id: str,
+    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+    user: User = Depends(get_current_user)
 ):
-    orders = await service.get_orders_in_warehouse(
+
+    order = await service.order_info(
         session=session,
-        warehouse_id=warehouse_id,
         employee_id=user.id,
-        is_given_out=is_given_out
+        order_id=order_id
     )
 
-    return orders
+    return order
 
 
 @router.post(
@@ -107,11 +91,11 @@ async def get_orders_in_warehouse(
 )
 async def upload_united_order_view(
         file: UploadFile,
-        warehouse_id: int,
+        warehouse: Warehouse = Depends(get_warehouse_dependency),
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
-    orders_ids = await service.add_orders_from_file(session, file, user.id, warehouse_id)
+    orders_ids = await service.add_orders_from_file(session, file, user.id, warehouse.id)
     return {"The created orders": orders_ids}
 
 
@@ -147,6 +131,22 @@ async def notify_customers(
         session=session,
         united_order_id=united_order_id
     )
+
+
+@router.delete(path="/delete")
+async def delete_united_order(
+        united_order_id: str,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
+):
+    await service.delete_united_order(
+        session=session,
+        united_order_id=united_order_id
+    )
+    return "Order had been deleted"
+
+
+
+
 
 
 

@@ -30,8 +30,8 @@ async def get_products_in_warehouse(session: AsyncSession, warehouse_id: int):
     stmt = (select(ProductOrderAssociation, func.sum(ProductOrderAssociation.amount))
             .options(
         joinedload(ProductOrderAssociation.order),
-                joinedload(ProductOrderAssociation.product),
-            )
+        joinedload(ProductOrderAssociation.product),
+    )
             .join(Order)
             .join(UnitedOrder, Order.united_order_id == UnitedOrder.id)
             .where(Order.warehouse_id == warehouse_id)
@@ -40,9 +40,8 @@ async def get_products_in_warehouse(session: AsyncSession, warehouse_id: int):
             .group_by(ProductOrderAssociation.product_id))
 
     result = await session.execute(stmt)
-
     products = result.all()
-
+    print(products)
     return products
 
 

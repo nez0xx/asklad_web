@@ -6,15 +6,19 @@ __all__ = (
     'User',
     'Customer',
     'UnitedOrder',
-    'Warehouse'
+    'Warehouse',
+    'Subscription',
+    'ProductOrderAssociation'
 )
 
 from .db_helper import db_helper
 from .db_model_base import Base
 from .db_model_customer import Customer
 from .db_model_order import Order
+from .db_model_order_product_association import ProductOrderAssociation
 from .db_model_product import Product
 from .db_model_user import User
 from .db_model_united_order import UnitedOrder
 from .db_model_warehouse import Warehouse
+from .db_model_subscription import Subscription
 

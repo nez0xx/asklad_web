@@ -6,10 +6,5 @@ class WarehouseCreateSchema(BaseModel):
     owner_id: int
 
 
-class EmployeeAddSchema(BaseModel):
-    employee_id: int
-    warehouse_id: int
-
-
 class WarehouseUpdateSchema(BaseModel):
     name: str | None = None

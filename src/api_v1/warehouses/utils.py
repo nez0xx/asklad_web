@@ -13,7 +13,7 @@ async def check_user_in_employees(
 
     association = await get_warehouse_employee_association(
         session=session,
-        user_id=employee_id,
+        employee_id=employee_id,
         warehouse_id=warehouse_id
     )
 

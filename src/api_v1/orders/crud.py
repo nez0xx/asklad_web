@@ -1,13 +1,12 @@
 from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
 
 from src.core.database import Order, UnitedOrder
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.database.db_model_order_product_association import ProductOrderAssociation
-from .customers.crud import get_or_create_customer
+from src.core.database import ProductOrderAssociation
 from .schemas import OrderBase
 from .products.crud import create_product, get_product_by_id
 
@@ -31,7 +30,7 @@ async def get_united_order(session: AsyncSession, united_order_id: str):
 
     return order
 
-
+'''
 async def get_order_by_id(session: AsyncSession, order_id: str) -> Order | None:
 
     stmt = (
@@ -78,7 +77,7 @@ async def create_order(
     session.add(order)
     await session.commit()
     return order.id
-
+'''
 
 async def get_united_orders(session: AsyncSession, warehouse_id: int):
     stmt = (select(UnitedOrder)
@@ -87,7 +86,7 @@ async def get_united_orders(session: AsyncSession, warehouse_id: int):
     orders = result.scalars().all()
     return orders
 
-
+'''
 async def get_all_orders(
         session: AsyncSession,
         warehouse_id: int,
@@ -154,5 +153,23 @@ async def delivery_united_order(
     united_order.delivery_date = date.today()
     await session.commit()
 
+'''
+async def delete_united_order(
+        session: AsyncSession,
+        united_order_id: str
+):
+
+    stmt_get_products = select(ProductOrderAssociation.id).join(Order).where(Order.united_order_id == united_order_id)
+    result = await session.execute(stmt_get_products)
+    ids = [elem[0] for elem in result.all()]
+
+    stmt_delete_products = delete(ProductOrderAssociation).where(ProductOrderAssociation.id.in_(ids))
+    stmt_delete_orders = delete(Order).where(Order.united_order_id == united_order_id)
+    stmt_delete_united_order = delete(UnitedOrder).where(UnitedOrder.id == united_order_id)
+
+    await session.execute(stmt_delete_products)
+    await session.execute(stmt_delete_orders)
+    await session.execute(stmt_delete_united_order)
+    await session.commit()
 
 
