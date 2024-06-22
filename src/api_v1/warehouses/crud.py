@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 
 from src.api_v1.warehouses.schemas import WarehouseCreateSchema, WarehouseUpdateSchema
 
-from src.api_v1.orders.crud import get_united_orders
+
 
 from src.core.database import Warehouse, ProductOrderAssociation, Order, UnitedOrder
 from src.core.database.db_model_warehouse_employee_association import WarehouseEmployeeAssociation
@@ -114,39 +114,24 @@ async def update_warehouse(
     return warehouse
 
 
-# функция дублирует код функций из orders.crud и выглядит некрасиво,
-# потому что при импорте получается циклический импорт
 async def delete_warehouse(
     session: AsyncSession,
     warehouse: Warehouse
 ):
+    from src.api_v1.orders.crud import get_united_orders, delete_united_order
 
-    get_united_orders_stmt = (select(UnitedOrder)
-            .where(UnitedOrder.warehouse_id == warehouse.id))
-
-    result = await session.execute(get_united_orders_stmt)
-
-    united_orders = result.scalars().all()
+    united_orders = await get_united_orders(
+        session=session,
+        warehouse_id=warehouse.id
+    )
 
     united_orders_ids = [un_order.id for un_order in united_orders]
 
     for united_order_id in united_orders_ids:
-
-        get_products_stmt = (select(ProductOrderAssociation.id)
-                             .join(Order)
-                             .where(Order.united_order_id == united_order_id))
-
-        result = await session.execute(get_products_stmt)
-        ids = [elem[0] for elem in result.all()]
-
-        delete_products_stmt = delete(ProductOrderAssociation).where(ProductOrderAssociation.id.in_(ids))
-        delete_orders_stmt = delete(Order).where(Order.united_order_id == united_order_id)
-        delete_united_order_stmt = delete(UnitedOrder).where(UnitedOrder.id == united_order_id)
-
-        await session.execute(delete_products_stmt)
-        await session.execute(delete_orders_stmt)
-        await session.execute(delete_united_order_stmt)
-        await session.commit()
+        await delete_united_order(
+            session=session,
+            united_order_id=united_order_id
+        )
 
     delete_employees_stmt = (delete(WarehouseEmployeeAssociation)
                             .where(WarehouseEmployeeAssociation.warehouse_id == warehouse.id))

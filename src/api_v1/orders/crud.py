@@ -30,7 +30,7 @@ async def get_united_order(session: AsyncSession, united_order_id: str):
 
     return order
 
-'''
+
 async def get_order_by_id(session: AsyncSession, order_id: str) -> Order | None:
 
     stmt = (
@@ -77,7 +77,7 @@ async def create_order(
     session.add(order)
     await session.commit()
     return order.id
-'''
+
 
 async def get_united_orders(session: AsyncSession, warehouse_id: int):
     stmt = (select(UnitedOrder)
@@ -86,7 +86,7 @@ async def get_united_orders(session: AsyncSession, warehouse_id: int):
     orders = result.scalars().all()
     return orders
 
-'''
+
 async def get_all_orders(
         session: AsyncSession,
         warehouse_id: int,
@@ -153,7 +153,7 @@ async def delivery_united_order(
     united_order.delivery_date = date.today()
     await session.commit()
 
-'''
+
 async def delete_united_order(
         session: AsyncSession,
         united_order_id: str
