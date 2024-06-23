@@ -19,7 +19,7 @@ async def create_united_order(session: AsyncSession, united_order_id: str, wareh
     return order
 
 
-async def get_united_order(session: AsyncSession, united_order_id: str):
+async def get_united_order_by_id(session: AsyncSession, united_order_id: str):
     stmt = (
         select(UnitedOrder)
         .options(selectinload(UnitedOrder.orders_relationship))

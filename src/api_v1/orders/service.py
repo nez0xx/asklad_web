@@ -1,11 +1,8 @@
-import os
-from datetime import datetime
-import requests
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api_v1.orders import crud, utils
-from src.api_v1.orders.crud import get_order_by_id, create_order, create_united_order, get_united_order
+from src.api_v1.orders.crud import get_order_by_id, create_order, create_united_order, get_united_order_by_id
 from src.api_v1.orders.customers.crud import get_or_create_customer
 from src.api_v1.orders.products.crud import get_product_by_id
 from src.api_v1.orders.schemas import OrderBase, UnitedOrderSchema, OrderInfoSchema, ProductSchema
@@ -25,7 +22,7 @@ async def add_orders(session: AsyncSession, united_order_schema: UnitedOrderSche
         warehouse_id=united_order_schema.warehouse_id
     )
 
-    united_order = await get_united_order(session=session, united_order_id=united_order_schema.united_order_id)
+    united_order = await get_united_order_by_id(session=session, united_order_id=united_order_schema.united_order_id)
 
     if united_order:
         raise HTTPException(
@@ -90,7 +87,7 @@ async def get_all_orders(
         is_given_out: bool | None
 ):
     warehouse = await get_user_available_warehouse(session, employee_id)
-    print(warehouse, "7"*100)
+
     if warehouse is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -120,7 +117,7 @@ async def get_orders_in_warehouse(
 
 
 async def united_order_info(session: AsyncSession, order_id: str, employee_id: int):
-    order = await get_united_order(session, order_id)
+    order = await get_united_order_by_id(session, order_id)
     if order is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -140,16 +137,41 @@ async def get_united_orders(session: AsyncSession, warehouse_id: int):
 
 
 async def give_order_out(session: AsyncSession, order_id: str, employee_id: int, comment: str | None):
-    order = await crud.get_order_by_id(session=session, order_id=order_id)
+    order = await crud.get_order_by_id(
+        session=session,
+        order_id=order_id
+    )
     if order is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Order with id {order_id} does not exist"
         )
 
+    united_order = await get_united_order_by_id(
+        session=session,
+        united_order_id=order.united_order_id
+    )
+
+    if not united_order.delivered:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"United order with id {united_order.id} has not been delivered"
+        )
     warehouse_id = order.warehouse_id
-    await check_user_in_employees(session=session, warehouse_id=warehouse_id, employee_id=employee_id)
-    order = await crud.give_out(session=session, order_id=order_id, given_by=employee_id, comment=comment)
+
+    await check_user_in_employees(
+        session=session,
+        warehouse_id=warehouse_id,
+        employee_id=employee_id
+    )
+
+    order = await crud.give_out(
+        session=session,
+        order_id=order_id,
+        given_by=employee_id,
+        comment=comment
+    )
+
     return order
 
 
@@ -161,7 +183,7 @@ async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee
     # проверка на отстутствие заказов в бд
     for united_order in united_orders:
         united_order_id = united_order["united_order_id"]
-        united_order = await crud.get_united_order(session, united_order_id)
+        united_order = await crud.get_united_order_by_id(session, united_order_id)
 
         if united_order:
             raise HTTPException(
@@ -183,7 +205,7 @@ async def notify_customers(
         session: AsyncSession,
         united_order_id: str
 ) -> int:
-    united_order = await crud.get_united_order(
+    united_order = await crud.get_united_order_by_id(
         session=session,
         united_order_id=united_order_id
     )
