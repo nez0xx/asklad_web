@@ -26,13 +26,5 @@ def find(sheet: Worksheet, value, method: str = "equal", start: int = 1, end: in
     return None
 
 
-def normalize_phone(phone: str):
-    letters = " +-_()"
-    for i in letters:
-        phone = phone.replace(i, "")
-    if len(phone) == 11:
-        phone = "+7" + phone[1::]
-    elif len(phone) == 10:
-        phone = "+7" + phone
-    return phone
+
 

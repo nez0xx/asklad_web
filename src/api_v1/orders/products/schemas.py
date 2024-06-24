@@ -1,13 +1,13 @@
 from pydantic import BaseModel
 
 
-class ProductBase(BaseModel):
+class ProductSchema(BaseModel):
 
     title: str
 
     amount: int
 
-    atomy_id: str
+    product_id: str
 
 
 class ProductUpdateSchema(BaseModel):

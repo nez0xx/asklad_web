@@ -5,13 +5,15 @@ from src.api_v1.orders import crud, utils
 from src.api_v1.orders.crud import get_order_by_id, create_order, create_united_order, get_united_order_by_id
 from src.api_v1.orders.customers.crud import get_or_create_customer
 from src.api_v1.orders.products.crud import get_product_by_id
-from src.api_v1.orders.schemas import OrderBase, UnitedOrderSchema, OrderInfoSchema, ProductSchema
-from src.api_v1.orders.utils import parse_excel
+from src.api_v1.orders.schemas import UnitedOrderSchema, OrderSchema
+from src.api_v1.orders.utils import parse_excel, create_payment_list_excel
 from src.api_v1.warehouses.crud import get_user_own_warehouse, get_warehouse_by_id, get_user_available_warehouse
 from src.api_v1.warehouses.utils import check_user_in_employees
+from src.core.database import Warehouse
 from src.core.settings import BASE_DIR
 from src.parser import parse
-from src.parser.utils import normalize_phone
+from .products.schemas import ProductSchema
+from .utils import normalize_phone
 
 
 async def add_orders(session: AsyncSession, united_order_schema: UnitedOrderSchema, employee_id: int):
@@ -68,17 +70,47 @@ async def add_orders(session: AsyncSession, united_order_schema: UnitedOrderSche
     return united_order_schema.united_order_id
 
 
-async def order_info(
+async def get_order(
         session: AsyncSession,
         employee_id: int,
         order_id: str
 ):
+    print("1"*100)
     order = await crud.get_order_by_id(
         session=session,
         order_id=order_id
     )
+    print("ВСЕ НОРМ"*100)
+    if order is None:
+        return None
 
-    return order
+    await check_user_in_employees(
+        session=session,
+        employee_id=employee_id,
+        warehouse_id=order.warehouse_id
+    )
+
+    order_schema = OrderSchema(
+        order_id=order.id,
+        customer_name=order.customer_name,
+        customer_id=order.customer_id,
+        customer_phone=order.customer_phone,
+        products=[]
+    )
+
+    for association in order.products_details:
+        product = await get_product_by_id(
+            session=session,
+            product_id=association.product_id
+        )
+        product_schema = ProductSchema(
+            title=product.title,
+            product_id=product.id,
+            amount=association.amount
+        )
+        order_schema.products.append(product_schema)
+
+    return order_schema
 
 
 async def get_all_orders(
@@ -282,6 +314,21 @@ async def delete_united_order(
     )
 
 
+async def create_issue_list(session: AsyncSession, united_order_id: str, warehouse: Warehouse):
+    united_order = await get_united_order_by_id(session=session, united_order_id=united_order_id)
+    if united_order is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"United order {united_order_id} does not exist"
+        )
+    if united_order.warehouse_id != warehouse.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The united order belongs to another warehouse"
+        )
+    orders = united_order.orders_relationship
+    filename = await create_payment_list_excel(orders)
+    return filename
 
 
 

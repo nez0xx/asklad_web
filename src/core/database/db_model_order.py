@@ -21,6 +21,8 @@ class Order(Base):
 
     customer_phone: Mapped[str]
 
+    customer_name: Mapped[str]
+
     warehouse_id: Mapped[int] = mapped_column(ForeignKey("warehouses.id"))
 
     united_order_id: Mapped[str] = mapped_column(ForeignKey("united_orders.id"))

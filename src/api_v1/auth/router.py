@@ -76,7 +76,7 @@ async def change_password(
 
 
 @router.get("/refresh")
-def refresh_token(
+def get_refresh_token(
         user: UserSchema = Depends(get_current_user_for_refresh)
 ):
     access_token = create_access_token(user.email)
@@ -95,7 +95,7 @@ async def confirm_email_view(
 
 
 @router.get("/reset_pass/{token}")
-async def check_token_exists(
+async def check_password_reset_token_exists(
         token: str,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
 ):

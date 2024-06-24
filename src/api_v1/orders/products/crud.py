@@ -5,10 +5,10 @@ from src.core.database import Product, Order, UnitedOrder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database.db_model_order_product_association import ProductOrderAssociation
-from .schemas import ProductBase, ProductUpdateSchema
+from .schemas import ProductSchema, ProductUpdateSchema
 
 
-async def create_product(session: AsyncSession, product_schema: ProductBase, warehouse_id: int):
+async def create_product(session: AsyncSession, product_schema: ProductSchema, warehouse_id: int):
 
     stmt = (
         select(Product)

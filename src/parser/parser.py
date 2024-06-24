@@ -2,7 +2,7 @@ from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 from .schemas import Order, Product, Customer, UnitedOrder
-from .utils import find, normalize_phone
+from .utils import find
 
 
 def get_united_orders_id(sheet: Worksheet):

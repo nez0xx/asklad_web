@@ -139,8 +139,13 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
         email=user_schema.email
     )
     if user:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exists")
-    user = await create_user(session, user_schema=user_schema)
+        if user.is_verify:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exists")
+        else:
+            # если юзер зарегался, но не подтвердил емеил, так и быть, даём ему второй шанс
+            await set_password(session=session, user_id=user.id, password=user_schema.password)
+    else:
+        user = await create_user(session, user_schema=user_schema)
 
     confirm_token = src.api_v1.utils.encode_jwt(payload={"email": user_schema.email}, expire_minutes=24*60)
 
@@ -187,11 +192,11 @@ async def change_password(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid password"
         )
-    if len(new_password) < 8:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must be longer than 8 characters"
-        )
+    #if len(new_password) < 8:
+        #raise HTTPException(
+        #    status_code=status.HTTP_400_BAD_REQUEST,
+        #    detail="Password must be longer than 8 characters"
+        #)
     await set_password(session=session, user_id=user.id, password=new_password)
 
 

@@ -1,14 +1,15 @@
 from datetime import date
 
 from sqlalchemy import select, delete
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
-from src.core.database import Order, UnitedOrder
+from src.core.database import Order, UnitedOrder, Product
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import ProductOrderAssociation
-from .schemas import OrderBase
+from .schemas import OrderSchema
 from .products.crud import create_product, get_product_by_id
+from .utils import normalize_phone
 
 
 async def create_united_order(session: AsyncSession, united_order_id: str, warehouse_id: int):
@@ -49,14 +50,17 @@ async def create_order(
         session: AsyncSession,
         customer_id: int,
         united_order_id: str,
-        order_schema: OrderBase,
+        order_schema: OrderSchema,
         warehouse_id: int
 ):
+
+    phone = normalize_phone(order_schema.customer_phone)
 
     order = Order(
         id=order_schema.atomy_id,
         customer_id=customer_id,
-        customer_phone=order_schema.customer_phone,
+        customer_name=order_schema.customer.name,
+        customer_phone=phone,
         warehouse_id=warehouse_id,
         united_order_id=united_order_id
     )

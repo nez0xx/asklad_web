@@ -3,8 +3,11 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.responses import FileResponse
+
 from src.api_v1.orders import crud, service
-from src.api_v1.orders.schemas import OrderBase, UnitedOrderSchema
+from src.api_v1.orders.schemas import UnitedOrderSchema
+from src.api_v1.subscriptions.dependencies import check_active_subscription_depends
 from src.api_v1.warehouses.dependencies import get_own_warehouse_dependency, get_warehouse_dependency
 from src.core.database import User, Warehouse
 from src.core.database.db_helper import db_helper
@@ -19,7 +22,7 @@ http_bearer = HTTPBearer()
 router = APIRouter(
     prefix="/orders",
     tags=["Orders"],
-    dependencies=[Depends(http_bearer), Depends(check_user_is_verify)]
+    dependencies=[Depends(http_bearer), Depends(check_user_is_verify),] #Depends(check_active_subscription_depends)]
 )
 
 
@@ -74,7 +77,7 @@ async def get_order(
     user: User = Depends(get_current_user)
 ):
 
-    order = await service.order_info(
+    order = await service.get_order(
         session=session,
         employee_id=user.id,
         order_id=order_id
@@ -142,6 +145,19 @@ async def delete_united_order(
     )
     return "Order had been deleted"
 
+
+@router.get(path="/blank/{united_order_id}")
+async def get_issue_list(
+        united_order_id: str,
+        warehouse: Warehouse = Depends(get_warehouse_dependency),
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
+):
+    filename = await service.create_issue_list(
+        session=session,
+        united_order_id=united_order_id,
+        warehouse=warehouse
+    )
+    return FileResponse(path=filename, filename='Лист выдачи.xlsx', media_type='multipart/form-data')
 
 
 

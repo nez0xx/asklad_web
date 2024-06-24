@@ -1,24 +1,26 @@
 from pydantic import BaseModel
 
 from .customers.schemas import CustomerBaseSchema
-from .products.schemas import ProductBase
+from .products.schemas import ProductSchema
 
 
-class OrderBase(BaseModel):
+class OrderSchema(BaseModel):
 
-    atomy_id: str
+    order_id: str
 
     customer_phone: str
 
-    customer: CustomerBaseSchema
+    customer_name: str
 
-    products: list[ProductBase]
+    customer_id: str
+
+    products: list[ProductSchema]
 
 
 class UnitedOrderSchema(BaseModel):
     warehouse_id: int
     united_order_id: str
-    orders: list[OrderBase]
+    orders: list[OrderSchema]
 
 
 class OrderListItem(BaseModel):
@@ -26,16 +28,10 @@ class OrderListItem(BaseModel):
     customer_phone: str
 
 # ДЛЯ ОТПРАВКИ АПИ ТГ БОТА
-class ProductSchema(BaseModel):
+class ProductTgSchema(BaseModel):
     title: str
     amount: int
 
-
-class OrderInfoSchema(BaseModel):
-    customer_phone: str
-    order_id: str
-    warehouse_name: str
-    products_list: list[ProductSchema]
 
 
 
