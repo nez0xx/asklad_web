@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api_v1.auth.dependencies import get_current_user
 from src.api_v1.subscriptions import crud
+from src.api_v1.subscriptions.exceptions import SubscriptionNotAvailable
 from src.core.database import User, db_helper, Subscription
 
 

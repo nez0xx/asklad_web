@@ -7,7 +7,7 @@ from . import service
 
 from src.api_v1.auth.service import (
     create_access_token,
-    get_current_user_for_refresh
+    get_current_user_for_refresh, reset_password_request
 )
 from .dependencies import get_current_user
 
@@ -60,6 +60,21 @@ async def get_me(user: User = Depends(get_current_user)):
     return user
 
 
+@router.post('/change_password')
+async def change_password(
+        password: str,
+        new_password: str,
+        user: User = Depends(get_current_user),
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
+):
+    await service.change_password(
+        session=session,
+        password=password,
+        new_password=new_password,
+        user=user
+    )
+
+
 @router.get("/refresh")
 def refresh_token(
         user: UserSchema = Depends(get_current_user_for_refresh)
@@ -71,12 +86,37 @@ def refresh_token(
     )
 
 
-@router.get("/confirm/{token}")
+@router.post("/confirm/")
 async def confirm_email_view(
     token: str,
     session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
 ):
     await service.confirm_email(session, token)
+
+
+@router.get("/reset_pass/{token}")
+async def check_token_exists(
+        token: str,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
+):
+    return await service.reset_token_exists(session=session, token=token)
+
+
+@router.post("/reset_pass/request")
+async def create_reset_password_request(
+        user_email: str,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
+):
+    await reset_password_request(session=session, user_email=user_email)
+
+
+@router.post("/reset_pass/")
+async def reset_password_view(
+        token: str,
+        password: str,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
+):
+    await service.reset_password(session=session, token=token, new_password=password)
 
 
 

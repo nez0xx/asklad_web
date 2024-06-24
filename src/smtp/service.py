@@ -11,7 +11,7 @@ port = 25 # For starttls
 # password = settings.SMTP_PASSWORD
 
 
-def send_message(email_to: str, html_message: str, subject: str = "Atomy WH"):
+def send_email(email_to: str, html_message: str, subject: str = "A-Склад"):
 
     context = ssl.create_default_context()
 

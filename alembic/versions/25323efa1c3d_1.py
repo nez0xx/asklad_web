@@ -1,8 +1,8 @@
-"""first
+"""1
 
-Revision ID: 0cb0be2ba550
+Revision ID: 25323efa1c3d
 Revises: 
-Create Date: 2024-06-22 17:37:26.647988
+Create Date: 2024-06-24 16:19:04.283626
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '0cb0be2ba550'
+revision: str = '25323efa1c3d'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -40,6 +40,14 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
+    op.create_table('resettokens',
+    sa.Column('token', sa.String(), nullable=False),
+    sa.Column('expired_at', sa.DateTime(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('subscriptions',
     sa.Column('expired_at', sa.DateTime(), nullable=False),
     sa.Column('started_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
@@ -56,7 +64,8 @@ def upgrade() -> None:
     sa.Column('created_at', sa.Date(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('owner_id')
     )
     op.create_table('united_orders',
     sa.Column('id', sa.String(), nullable=False),
@@ -112,6 +121,7 @@ def downgrade() -> None:
     op.drop_table('united_orders')
     op.drop_table('warehouses')
     op.drop_table('subscriptions')
+    op.drop_table('resettokens')
     op.drop_table('users')
     op.drop_table('products')
     op.drop_table('customers')

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from sqlalchemy import text, func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -11,7 +11,7 @@ class Subscription(Base):
     #price: Mapped[int]
     #paid_time: Mapped[datetime | None]
     started_at: Mapped[datetime] = mapped_column(
-        default=datetime.now(tz=timezone.utc),
+        default=datetime.now(tz=timezone(offset=timedelta(hours=5))),
         server_default=func.now()
     )
     user_id: Mapped[str] = mapped_column(
@@ -21,7 +21,7 @@ class Subscription(Base):
     #    ForeignKey("tariffs.id")
     #)
     created_at: Mapped[datetime] = mapped_column(
-        default=datetime.now(tz=timezone.utc),
+        default=datetime.now(tz=timezone(offset=timedelta(hours=5))),
         server_default=func.now(),
     )
     is_active: Mapped[bool] = mapped_column(
@@ -45,7 +45,7 @@ class Subscription(Base):
     '''
 
     def __str__(self):
-        return f"{self.__class__.__name__} | {self.user_email}"
+        return f"{self.__class__.__name__} | {self.user}"
 
     def __repr__(self):
         return str(self)

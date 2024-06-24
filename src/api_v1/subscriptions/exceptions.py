@@ -1,3 +1,6 @@
+from src.api_v1.exceptions import PermissionDenied
+
+
 class SubscriptionNotAvailable(PermissionDenied):
     DETAIL = "Subscription not found or expired."
 

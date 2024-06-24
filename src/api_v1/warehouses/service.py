@@ -12,7 +12,7 @@ from src.core.database.db_model_warehouse_employee_association import WarehouseE
 from src.api_v1.exceptions import WarehouseDoesNotExist
 
 from src.core.settings import settings
-from src.smtp import send_message
+from src.smtp import send_email
 
 from sqlalchemy.exc import IntegrityError
 

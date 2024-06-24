@@ -1,6 +1,6 @@
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from src.api_v1.warehouses.schemas import WarehouseCreateSchema, WarehouseUpdateSchema
 
@@ -49,6 +49,7 @@ async def get_warehouse_by_id(session: AsyncSession, warehouse_id: int):
     stmt = (select(Warehouse)
             .options(selectinload(Warehouse.employees_details))
             .options(selectinload(Warehouse.orders_relationship))
+            .options(selectinload(Warehouse.united_orders_relationship))
             .where(Warehouse.id == warehouse_id))
     result = await session.execute(stmt)
     warehouse = result.scalar_one_or_none()
