@@ -16,7 +16,7 @@ from .products.schemas import ProductSchema
 from .utils import normalize_phone
 
 
-async def add_orders(session: AsyncSession, united_order_schema: UnitedOrderSchema, employee_id: int):
+async def add_united_order(session: AsyncSession, united_order_schema: UnitedOrderSchema, employee_id: int):
 
     await check_user_in_employees(
         session=session,
@@ -36,7 +36,7 @@ async def add_orders(session: AsyncSession, united_order_schema: UnitedOrderSche
 
         order = await get_order_by_id(
             session=session,
-            order_id=order_schema.atomy_id
+            order_id=order_schema.order_id
         )
 
         if order:
@@ -55,8 +55,8 @@ async def add_orders(session: AsyncSession, united_order_schema: UnitedOrderSche
 
         customer = await get_or_create_customer(
             session=session,
-            customer_schema=order_schema.customer,
-            warehouse_id=united_order_schema.warehouse_id
+            customer_name=order_schema.customer_name,
+            customer_id=order_schema.customer_id
         )
 
         await create_order(
@@ -224,10 +224,10 @@ async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee
             )
 
     for united_order in united_orders:
-
+        print(united_order)
         united_order["warehouse_id"] = warehouse_id
         schema = UnitedOrderSchema(**united_order)
-        united_order_id = await add_orders(session, schema, employee_id=employee_id)
+        united_order_id = await add_united_order(session, schema, employee_id=employee_id)
         united_orders_ids.append(united_order_id)
 
     return united_orders_ids
@@ -308,6 +308,17 @@ async def delete_united_order(
         session: AsyncSession,
         united_order_id: str
 ):
+    united_order = await crud.get_united_order_by_id(
+        session=session,
+        united_order_id=united_order_id
+    )
+
+    if united_order is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="United order does not exist"
+        )
+
     await crud.delete_united_order(
         session=session,
         united_order_id=united_order_id

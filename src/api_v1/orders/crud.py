@@ -57,9 +57,9 @@ async def create_order(
     phone = normalize_phone(order_schema.customer_phone)
 
     order = Order(
-        id=order_schema.atomy_id,
+        id=order_schema.order_id,
         customer_id=customer_id,
-        customer_name=order_schema.customer.name,
+        customer_name=order_schema.customer_name,
         customer_phone=phone,
         warehouse_id=warehouse_id,
         united_order_id=united_order_id
@@ -69,8 +69,7 @@ async def create_order(
 
         product = await create_product(
             session=session,
-            product_schema=product_schema,
-            warehouse_id=warehouse_id
+            product_schema=product_schema
         )
         session.add(ProductOrderAssociation(
             product=product,
@@ -170,10 +169,11 @@ async def delete_united_order(
     stmt_delete_products = delete(ProductOrderAssociation).where(ProductOrderAssociation.id.in_(ids))
     stmt_delete_orders = delete(Order).where(Order.united_order_id == united_order_id)
     stmt_delete_united_order = delete(UnitedOrder).where(UnitedOrder.id == united_order_id)
-
+    print("sfsfsfsfsfsfsfsfsfsfsfffffffffffffffffffffffffffffffffffffffffffffffffffff", united_order_id)
     await session.execute(stmt_delete_products)
     await session.execute(stmt_delete_orders)
     await session.execute(stmt_delete_united_order)
     await session.commit()
+    await session.close()
 
 

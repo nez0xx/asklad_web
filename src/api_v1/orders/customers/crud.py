@@ -9,8 +9,8 @@ async def get_warehouse_customers(session: AsyncSession, warehouse_id: int):
     stmt = (
         select(Customer, func.count(Customer.id))
         .outerjoin(Order, Customer.id == Order.customer_id)
-        .group_by(Customer.atomy_id)
-        .where(Customer.warehouse_id == warehouse_id))
+        .group_by(Customer.id)
+    )
 
     result = await session.execute(stmt)
 
@@ -18,18 +18,18 @@ async def get_warehouse_customers(session: AsyncSession, warehouse_id: int):
     return customers
 
 
-async def get_or_create_customer(session: AsyncSession, customer_schema: CustomerBaseSchema, warehouse_id: int):
+async def get_or_create_customer(session: AsyncSession, customer_id: str, customer_name: str):
 
     stmt = (
         select(Customer)
-        .where(Customer.id == customer_schema.atomy_id)
+        .where(Customer.id == customer_id)
     )
 
     result = await session.execute(stmt)
     customer = result.scalar_one_or_none()
 
     if customer is None:
-        customer = Customer(name=customer_schema.name, id=customer_schema.atomy_id)
+        customer = Customer(name=customer_name, id=customer_id)
         session.add(customer)
         await session.commit()
 

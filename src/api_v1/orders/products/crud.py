@@ -8,17 +8,17 @@ from src.core.database.db_model_order_product_association import ProductOrderAss
 from .schemas import ProductSchema, ProductUpdateSchema
 
 
-async def create_product(session: AsyncSession, product_schema: ProductSchema, warehouse_id: int):
+async def create_product(session: AsyncSession, product_schema: ProductSchema):
 
     stmt = (
         select(Product)
-        .where(Product.id == product_schema.atomy_id)
+        .where(Product.id == product_schema.product_id)
     )
     result = await session.execute(stmt)
     product = result.scalar_one_or_none()
 
     if product is None:
-        product = Product(title=product_schema.title, id=product_schema.atomy_id)
+        product = Product(title=product_schema.title, id=product_schema.product_id)
         session.add(product)
 
     await session.commit()

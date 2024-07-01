@@ -1,8 +1,10 @@
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
-from .schemas import Order, Product, Customer, UnitedOrder
+from src.api_v1.orders.schemas import OrderSchema
+from .schemas import UnitedOrder
 from .utils import find
+from ..api_v1.orders.products.schemas import ProductSchema
 
 
 def get_united_orders_id(sheet: Worksheet):
@@ -20,10 +22,9 @@ def get_united_orders_id(sheet: Worksheet):
 
 def get_start_row(sheet):
     united_orders_id = get_united_orders_id(sheet)
-    print(united_orders_id)
     min_row = find(sheet=sheet, value=united_orders_id[0])["row"]
+
     for order_id in united_orders_id:
-        print(order_id, "-"*100)
         row = find(sheet=sheet, value=order_id)["row"]
         if row < min_row:
             min_row = row
@@ -100,9 +101,10 @@ def parse_worksheet(sheet: Worksheet) -> list[UnitedOrder]:
             name = sheet[f"{customer_name_column}{row}"].value
             customer_id = sheet[f"{customer_id_column}{row}"].value
             phone = sheet[f"{customer_phone_column}{row}"].value
-            order = Order(
-                atomy_id=order_id,
-                customer=Customer(name=name, atomy_id=customer_id),
+            order = OrderSchema(
+                order_id=order_id,
+                customer_name=name,
+                customer_id=customer_id,
                 customer_phone=phone,
                 products=[]
             )
@@ -116,8 +118,8 @@ def parse_worksheet(sheet: Worksheet) -> list[UnitedOrder]:
             product_title = sheet[f"{product_title_column}{row}"].value
             product_amount = sheet[f"{product_amount_column}{row}"].value
 
-            product = Product(
-                atomy_id=product_id,
+            product = ProductSchema(
+                product_id=product_id,
                 title=product_title,
                 amount=product_amount
             )
