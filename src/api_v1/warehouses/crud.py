@@ -6,16 +6,17 @@ from src.api_v1.warehouses.schemas import WarehouseCreateSchema, WarehouseUpdate
 
 
 
-from src.core.database import Warehouse, ProductOrderAssociation, Order, UnitedOrder
+from src.core.database import Warehouse, ProductOrderAssociation, Order, UnitedOrder, User
 from src.core.database.db_model_warehouse_employee_association import WarehouseEmployeeAssociation
 
 
 async def get_employees(session: AsyncSession, warehouse_id: int):
     stmt = (select(WarehouseEmployeeAssociation)
+            .options(selectinload(WarehouseEmployeeAssociation.employee))
             .where(WarehouseEmployeeAssociation.warehouse_id == warehouse_id))
     result = await session.execute(stmt)
     employees_details = result.scalars()
-    return employees_details
+    return [elem for elem in employees_details]
 
 
 async def get_warehouse_employee_association(session: AsyncSession, employee_id: int, warehouse_id: int):
@@ -51,6 +52,7 @@ async def get_warehouse_by_id(session: AsyncSession, warehouse_id: int):
             .options(selectinload(Warehouse.orders_relationship))
             .options(selectinload(Warehouse.united_orders_relationship))
             .where(Warehouse.id == warehouse_id))
+
     result = await session.execute(stmt)
     warehouse = result.scalar_one_or_none()
     return warehouse

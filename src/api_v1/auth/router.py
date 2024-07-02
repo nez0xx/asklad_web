@@ -1,7 +1,7 @@
 from fastapi.security import HTTPBasic, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.database import db_helper, User
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from . import service
 
 
@@ -40,13 +40,16 @@ async def register_user(
 @router.post("/login", response_model=TokenInfo)
 async def auth_user_issue_jwt(
     user_data: AuthUser,
-    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
-):
+    response: Response,
+    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
 
+):
     user = await service.authenticate_user(user_data, session)
 
     access_token = service.create_access_token(user.email)
     refresh_token = service.create_refresh_token(user.email)
+
+    response.set_cookie(key='refresh_token', value=refresh_token, httponly=True)
 
     return TokenInfo(
         access_token=access_token,

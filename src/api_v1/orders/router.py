@@ -126,11 +126,13 @@ async def give_order_out(
 @router.post(path="/notify")
 async def notify_customers(
         united_order_id: str,
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+        user: User = Depends(get_current_user)
 ):
     await service.notify_customers(
         session=session,
-        united_order_id=united_order_id
+        united_order_id=united_order_id,
+        user=user
     )
 
 

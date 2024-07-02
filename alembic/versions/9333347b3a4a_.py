@@ -1,8 +1,8 @@
-"""1
+"""
 
-Revision ID: 4cbb0812e2f0
+Revision ID: 9333347b3a4a
 Revises: 
-Create Date: 2024-06-24 19:42:46.198563
+Create Date: 2024-07-03 00:42:58.843492
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '4cbb0812e2f0'
+revision: str = '9333347b3a4a'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,11 +28,13 @@ def upgrade() -> None:
     op.create_table('products',
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('title', sa.String(), nullable=False),
+    sa.Column('price', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('users',
     sa.Column('hashed_password', sa.String(), nullable=False),
     sa.Column('email', sa.String(length=40), nullable=False),
+    sa.Column('name', sa.String(), nullable=False),
     sa.Column('is_admin', sa.Boolean(), server_default=sa.text('(false)'), nullable=False),
     sa.Column('is_verify', sa.Boolean(), server_default=sa.text('(false)'), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
@@ -71,7 +73,9 @@ def upgrade() -> None:
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('warehouse_id', sa.Integer(), nullable=False),
     sa.Column('delivery_date', sa.Date(), nullable=True),
+    sa.Column('accepted_by', sa.Integer(), nullable=True),
     sa.Column('delivered', sa.Boolean(), nullable=False),
+    sa.ForeignKeyConstraint(['accepted_by'], ['users.id'], ),
     sa.ForeignKeyConstraint(['warehouse_id'], ['warehouses.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
@@ -93,6 +97,7 @@ def upgrade() -> None:
     sa.Column('warehouse_id', sa.Integer(), nullable=False),
     sa.Column('united_order_id', sa.String(), nullable=False),
     sa.Column('is_given_out', sa.Boolean(), server_default=sa.text('(false)'), nullable=False),
+    sa.Column('issue_date', sa.Date(), nullable=True),
     sa.Column('given_by', sa.Integer(), nullable=True),
     sa.Column('comment', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['customer_id'], ['customers.id'], ),

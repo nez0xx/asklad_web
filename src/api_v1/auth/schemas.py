@@ -14,6 +14,8 @@ class RegisterUser(BaseModel):
 
     password: str
 
+    name: str
+
     @computed_field
     def hashed_password(self) -> str:
         return hash_password(self.password).decode()

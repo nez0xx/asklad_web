@@ -9,7 +9,7 @@ from src.api_v1.orders.schemas import UnitedOrderSchema, OrderSchema
 from src.api_v1.orders.utils import parse_excel, create_payment_list_excel
 from src.api_v1.warehouses.crud import get_user_own_warehouse, get_warehouse_by_id, get_user_available_warehouse
 from src.api_v1.warehouses.utils import check_user_in_employees
-from src.core.database import Warehouse
+from src.core.database import Warehouse, User
 from src.core.settings import BASE_DIR
 from src.parser import parse
 from .products.schemas import ProductSchema
@@ -235,8 +235,10 @@ async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee
 
 async def notify_customers(
         session: AsyncSession,
-        united_order_id: str
+        united_order_id: str,
+        user: User
 ) -> int:
+
     united_order = await crud.get_united_order_by_id(
         session=session,
         united_order_id=united_order_id
@@ -256,6 +258,12 @@ async def notify_customers(
     warehouse = await get_warehouse_by_id(
         session=session,
         warehouse_id=united_order.warehouse_id
+    )
+
+    await check_user_in_employees(
+        session=session,
+        employee_id=user.id,
+        warehouse_id=warehouse.id
     )
 
     orders = await crud.get_orders_in_united_order(
@@ -299,7 +307,8 @@ async def notify_customers(
     '''
     await crud.delivery_united_order(
         session=session,
-        united_order=united_order
+        united_order=united_order,
+        employee_id=user.id
     )
     return 1
 

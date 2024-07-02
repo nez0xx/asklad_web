@@ -5,7 +5,7 @@ from src.core.database.db_helper import db_helper
 from . import crud, service
 from fastapi.security import HTTPBearer
 from src.api_v1.auth.dependencies import check_user_is_verify, get_current_user
-from .crud import get_warehouse_by_name_and_owner, get_warehouse_by_id
+from .crud import get_warehouse_by_name_and_owner, get_warehouse_by_id, get_employees
 from .dependencies import get_own_warehouse_dependency, get_warehouse_dependency
 from .schemas import WarehouseCreateSchema, WarehouseUpdateSchema
 
@@ -37,8 +37,12 @@ async def confirm_employee_invite(
 @router.get(path="/")
 async def get_user_available_warehouse_view(
     user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
     warehouse: Warehouse = Depends(get_warehouse_dependency)
 ):
+    # не убирать(!)
+    employees = await get_employees(session=session, warehouse_id=warehouse.id)
+
     data = {"warehouse": warehouse}
 
     if warehouse:
@@ -46,6 +50,7 @@ async def get_user_available_warehouse_view(
             data["role"] = "own"
         else:
             data["role"] = "emp"
+
     return data
 
 

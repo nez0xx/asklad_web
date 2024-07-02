@@ -9,7 +9,7 @@ from src.core.database import Base
 from src.core.database.db_model_warehouse_employee_association import WarehouseEmployeeAssociation
 
 if TYPE_CHECKING:
-    from src.core.database import Subscription
+    from src.core.database import Subscription, UnitedOrder
 
 
 class User(Base):
@@ -18,6 +18,8 @@ class User(Base):
         String(length=40),
         unique=True
     )
+
+    name: Mapped[str]
 
     is_admin: Mapped[bool] = mapped_column(
         default=False,
@@ -37,3 +39,5 @@ class User(Base):
         default=datetime.now(tz=timezone.utc),
         server_default=func.now()
     )
+
+    united_orders_relationship: Mapped[list["UnitedOrder"]] = relationship(back_populates="employee_relationship")

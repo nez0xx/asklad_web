@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timezone, timedelta
 
 from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload, joinedload
@@ -23,7 +23,7 @@ async def create_united_order(session: AsyncSession, united_order_id: str, wareh
 async def get_united_order_by_id(session: AsyncSession, united_order_id: str):
     stmt = (
         select(UnitedOrder)
-        .options(selectinload(UnitedOrder.orders_relationship))
+        .options(selectinload(UnitedOrder.orders_relationship), selectinload(UnitedOrder.employee_relationship))
         .where(UnitedOrder.id == united_order_id)
     )
     result = await session.execute(stmt)
@@ -84,6 +84,7 @@ async def create_order(
 
 async def get_united_orders(session: AsyncSession, warehouse_id: int):
     stmt = (select(UnitedOrder)
+            .options(selectinload(UnitedOrder.employee_relationship))
             .where(UnitedOrder.warehouse_id == warehouse_id))
     result = await session.execute(stmt)
     orders = result.scalars().all()
@@ -128,6 +129,7 @@ async def give_out(session: AsyncSession, order_id: str, given_by: int, comment:
                 session=session,
                 product_id=assoc.product_id
                 )
+        order.issue_date = date.today()
         order.comment = comment
         order.is_given_out = True
         order.given_by = given_by  # кем выдан
@@ -150,9 +152,11 @@ async def get_orders_in_united_order(
 
 async def delivery_united_order(
         session: AsyncSession,
-        united_order: UnitedOrder
+        united_order: UnitedOrder,
+        employee_id: int
 ):
     united_order.delivered = True
+    united_order.accepted_by = employee_id
     united_order.delivery_date = date.today()
     await session.commit()
 
@@ -169,7 +173,7 @@ async def delete_united_order(
     stmt_delete_products = delete(ProductOrderAssociation).where(ProductOrderAssociation.id.in_(ids))
     stmt_delete_orders = delete(Order).where(Order.united_order_id == united_order_id)
     stmt_delete_united_order = delete(UnitedOrder).where(UnitedOrder.id == united_order_id)
-    print("sfsfsfsfsfsfsfsfsfsfsfffffffffffffffffffffffffffffffffffffffffffffffffffff", united_order_id)
+
     await session.execute(stmt_delete_products)
     await session.execute(stmt_delete_orders)
     await session.execute(stmt_delete_united_order)

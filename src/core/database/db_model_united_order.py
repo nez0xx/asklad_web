@@ -2,12 +2,13 @@ from datetime import date
 
 from sqlalchemy import func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
-from src.core.database import Base
+
 from typing import TYPE_CHECKING
 
+from src.core.database import Base
+
 if TYPE_CHECKING:
-    from src.core.database.db_model_order import Order
-    from src.core.database.db_model_warehouse import Warehouse
+    from src.core.database import Warehouse, User, Order
 
 
 class UnitedOrder(Base):
@@ -27,6 +28,10 @@ class UnitedOrder(Base):
     delivery_date: Mapped[date] = mapped_column(
         nullable=True
     )
+    # работник который принял доставку
+    accepted_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    # работник который принял доставку
+    employee_relationship: Mapped["User"] = relationship(back_populates="united_orders_relationship")
 
     delivered: Mapped[bool] = mapped_column(default=False)
 

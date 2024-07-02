@@ -1,3 +1,5 @@
+from datetime import date
+
 from sqlalchemy import ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
@@ -37,6 +39,8 @@ class Order(Base):
     products_details: Mapped[list["ProductOrderAssociation"]] = relationship(
         back_populates="order"
     )
+
+    issue_date: Mapped[date] = mapped_column(nullable=True)
 
     given_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)  # кем выдан
 
