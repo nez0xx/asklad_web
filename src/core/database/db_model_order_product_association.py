@@ -26,10 +26,13 @@ class ProductOrderAssociation(Base):
 
     amount: Mapped[int]
 
-    order: Mapped["Order"] = relationship(
+    order_relationship: Mapped["Order"] = relationship(
         back_populates="products_details",
     )
     # association between Assocation -> Product
-    product: Mapped["Product"] = relationship(
+    product_relationship: Mapped["Product"] = relationship(
         back_populates="orders_details",
     )
+
+    def __repr__(self):
+        return f"Id: {self.product_id}; Order: {self.order_id}; Am: {self.amount}"

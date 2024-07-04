@@ -29,7 +29,7 @@ async def get_products_in_warehouse(session: AsyncSession, warehouse_id: int):
 
     stmt = (select(ProductOrderAssociation, func.sum(ProductOrderAssociation.amount))
             .options(
-        joinedload(ProductOrderAssociation.order),
+        joinedload(ProductOrderAssociation.order_relationship),
         joinedload(ProductOrderAssociation.product),
     )
             .join(Order)

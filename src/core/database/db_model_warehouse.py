@@ -19,7 +19,7 @@ class Warehouse(Base):
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
 
     employees_details: Mapped[list["WarehouseEmployeeAssociation"]] = relationship(
-        back_populates="warehouse",
+        back_populates="warehouse_relationship",
     )
 
     orders_relationship: Mapped[list["Order"]] = relationship()
@@ -30,3 +30,6 @@ class Warehouse(Base):
         default=date.today(),
         server_default=func.now()
     )
+
+    def __repr__(self):
+        return f"Id: {self.id}; {self.name}"

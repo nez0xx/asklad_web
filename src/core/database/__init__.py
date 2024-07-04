@@ -9,7 +9,8 @@ __all__ = (
     'Warehouse',
     'Subscription',
     'ProductOrderAssociation',
-    'ResetToken'
+    'ResetToken',
+    'WarehouseEmployeeAssociation'
 )
 
 from .db_helper import db_helper
@@ -23,4 +24,5 @@ from .db_model_united_order import UnitedOrder
 from .db_model_warehouse import Warehouse
 from .db_model_subscription import Subscription
 from .db_model_reset_token import ResetToken
+from .db_model_warehouse_employee_association import WarehouseEmployeeAssociation
 

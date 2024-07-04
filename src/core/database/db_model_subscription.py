@@ -11,7 +11,7 @@ class Subscription(Base):
     #price: Mapped[int]
     #paid_time: Mapped[datetime | None]
     started_at: Mapped[datetime] = mapped_column(
-        default=datetime.now(tz=timezone(offset=timedelta(hours=5))),
+        default=datetime.now(),
         server_default=func.now()
     )
     user_id: Mapped[str] = mapped_column(
@@ -21,7 +21,7 @@ class Subscription(Base):
     #    ForeignKey("tariffs.id")
     #)
     created_at: Mapped[datetime] = mapped_column(
-        default=datetime.now(tz=timezone(offset=timedelta(hours=5))),
+        default=datetime.now(),
         server_default=func.now(),
     )
     is_active: Mapped[bool] = mapped_column(
@@ -29,8 +29,8 @@ class Subscription(Base):
         server_default=text("false")
     )
 
-    user: Mapped["User"] = relationship(
-        back_populates="subscriptions"
+    user_relationship: Mapped["User"] = relationship(
+        back_populates="subscriptions_relationship"
     )
     ''''
     paypal_payment: Mapped["PayPalPayment"] = relationship(

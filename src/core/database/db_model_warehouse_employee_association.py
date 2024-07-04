@@ -24,10 +24,13 @@ class WarehouseEmployeeAssociation(Base):
 
     warehouse_id: Mapped[str] = mapped_column(ForeignKey("warehouses.id"))
 
-    employee: Mapped["User"] = relationship(
+    employee_relationship: Mapped["User"] = relationship(
         back_populates="warehouses_details",
     )
     # association between Assocation -> Product
-    warehouse: Mapped["Warehouse"] = relationship(
+    warehouse_relationship: Mapped["Warehouse"] = relationship(
         back_populates="employees_details",
     )
+
+    def __repr__(self):
+        return f"Wh: {self.warehouse_id} Emp: {self.user_id}"

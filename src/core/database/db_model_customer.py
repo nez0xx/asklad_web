@@ -17,4 +17,6 @@ class Customer(Base):
 
     id: Mapped[str] = mapped_column(primary_key=True)
 
+    def __repr__(self):
+        return self.name
 

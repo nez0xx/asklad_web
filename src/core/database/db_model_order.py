@@ -37,7 +37,7 @@ class Order(Base):
     )
 
     products_details: Mapped[list["ProductOrderAssociation"]] = relationship(
-        back_populates="order"
+        back_populates="order_relationship"
     )
 
     issue_date: Mapped[date] = mapped_column(nullable=True)
@@ -45,3 +45,6 @@ class Order(Base):
     given_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)  # кем выдан
 
     comment: Mapped[str] = mapped_column(nullable=True)
+
+    def __repr__(self):
+        return f"{self.id}_{self.customer_name.split()[0]}"

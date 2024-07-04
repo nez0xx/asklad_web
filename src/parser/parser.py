@@ -93,22 +93,37 @@ def parse_worksheet(sheet: Worksheet) -> list[UnitedOrder]:
             continue
 
         # Если нашли начало блока с информацией о конкретном заказе
-        if cell_value.startswith(id_templates[0])\
+        elif cell_value.startswith(id_templates[0])\
             or cell_value.startswith(id_templates[1])\
                 or cell_value.startswith(id_templates[2]):
 
             order_id = sheet[f"{order_id_column}{row}"].value
-            name = sheet[f"{customer_name_column}{row}"].value
+            customer_name = sheet[f"{customer_name_column}{row}"].value
             customer_id = sheet[f"{customer_id_column}{row}"].value
             phone = sheet[f"{customer_phone_column}{row}"].value
             order = OrderSchema(
                 order_id=order_id,
-                customer_name=name,
+                customer_name=customer_name,
                 customer_id=customer_id,
                 customer_phone=phone,
                 products=[]
             )
 
+            united_orders[-1].orders.append(order)
+
+        # возврат недостающего товара
+        elif cell_value.startswith("VNPT"):
+            order_id = sheet[f"A{row}"].value
+            customer_name = "REFUND"
+            customer_id = "REFUND"
+            phone = "+7-777-777-77-77"
+            order = OrderSchema(
+                order_id=order_id,
+                customer_name=customer_name,
+                customer_id=customer_id,
+                customer_phone=phone,
+                products=[]
+            )
             united_orders[-1].orders.append(order)
 
         else:

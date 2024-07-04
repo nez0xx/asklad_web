@@ -12,7 +12,7 @@ from src.core.database.db_model_warehouse_employee_association import WarehouseE
 
 async def get_employees(session: AsyncSession, warehouse_id: int):
     stmt = (select(WarehouseEmployeeAssociation)
-            .options(selectinload(WarehouseEmployeeAssociation.employee))
+            .options(selectinload(WarehouseEmployeeAssociation.employee_relationship))
             .where(WarehouseEmployeeAssociation.warehouse_id == warehouse_id))
     result = await session.execute(stmt)
     employees_details = result.scalars()

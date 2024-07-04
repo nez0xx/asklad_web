@@ -35,4 +35,6 @@ class UnitedOrder(Base):
 
     delivered: Mapped[bool] = mapped_column(default=False)
 
+    def __repr__(self):
+        return f"{self.id}"
 

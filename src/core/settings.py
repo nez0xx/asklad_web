@@ -28,7 +28,7 @@ class Settings(SettingsWithLoadEnvVars):
 
     auth_jwt: AuthJWT = AuthJWT()
 
-    db_url: str = f'sqlite+aiosqlite:///{BASE_DIR}/db.sqlite3'
+    db_url: str = 'postgresql+asyncpg://postgres:root@localhost:5432/db_wh'
     SMTP_LOGIN: str
     SMTP_PASSWORD: str
     HOST: str

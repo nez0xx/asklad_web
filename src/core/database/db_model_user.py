@@ -31,13 +31,17 @@ class User(Base):
         server_default=text("false")
     )
 
-    warehouses_details: Mapped[list["WarehouseEmployeeAssociation"]] = relationship(back_populates="employee")
+    warehouses_details: Mapped[list["WarehouseEmployeeAssociation"]] = relationship(back_populates="employee_relationship")
 
-    subscriptions: Mapped[list["Subscription"]] = relationship(back_populates="user")
+    subscriptions_relationship: Mapped[list["Subscription"]] = relationship(back_populates="user_relationship")
 
     created_at: Mapped[datetime] = mapped_column(
-        default=datetime.now(tz=timezone.utc),
-        server_default=func.now()
+        default=datetime.now()
+
     )
 
+    # выданные юзером заказы
     united_orders_relationship: Mapped[list["UnitedOrder"]] = relationship(back_populates="employee_relationship")
+
+    def __repr__(self):
+        return f"{self.name} {self.email}"

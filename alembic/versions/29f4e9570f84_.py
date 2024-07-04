@@ -1,8 +1,8 @@
 """
 
-Revision ID: 9333347b3a4a
+Revision ID: 29f4e9570f84
 Revises: 
-Create Date: 2024-07-03 00:42:58.843492
+Create Date: 2024-07-03 19:27:17.615873
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '9333347b3a4a'
+revision: str = '29f4e9570f84'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -35,9 +35,9 @@ def upgrade() -> None:
     sa.Column('hashed_password', sa.String(), nullable=False),
     sa.Column('email', sa.String(length=40), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('is_admin', sa.Boolean(), server_default=sa.text('(false)'), nullable=False),
-    sa.Column('is_verify', sa.Boolean(), server_default=sa.text('(false)'), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('is_admin', sa.Boolean(), server_default=sa.text('false'), nullable=False),
+    sa.Column('is_verify', sa.Boolean(), server_default=sa.text('false'), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
@@ -52,10 +52,10 @@ def upgrade() -> None:
     )
     op.create_table('subscriptions',
     sa.Column('expired_at', sa.DateTime(), nullable=False),
-    sa.Column('started_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('started_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.Column('is_active', sa.Boolean(), server_default=sa.text('(false)'), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('is_active', sa.Boolean(), server_default=sa.text('false'), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -63,7 +63,7 @@ def upgrade() -> None:
     op.create_table('warehouses',
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('owner_id', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.Date(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('created_at', sa.Date(), server_default=sa.text('now()'), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id'),
@@ -96,7 +96,7 @@ def upgrade() -> None:
     sa.Column('customer_name', sa.String(), nullable=False),
     sa.Column('warehouse_id', sa.Integer(), nullable=False),
     sa.Column('united_order_id', sa.String(), nullable=False),
-    sa.Column('is_given_out', sa.Boolean(), server_default=sa.text('(false)'), nullable=False),
+    sa.Column('is_given_out', sa.Boolean(), server_default=sa.text('false'), nullable=False),
     sa.Column('issue_date', sa.Date(), nullable=True),
     sa.Column('given_by', sa.Integer(), nullable=True),
     sa.Column('comment', sa.String(), nullable=True),
