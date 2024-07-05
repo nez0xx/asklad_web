@@ -1,4 +1,5 @@
 from datetime import date, timezone, timedelta
+from typing import Sequence
 
 from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload, joinedload
@@ -12,24 +13,28 @@ from .products.crud import create_product, get_product_by_id
 from .utils import normalize_phone
 
 
-async def create_united_order(session: AsyncSession, united_order_id: str, warehouse_id: int):
+async def create_united_order(
+        session: AsyncSession,
+        united_order_id: str,
+        warehouse_id: int
+) -> UnitedOrder:
 
-    order = UnitedOrder(id=united_order_id, warehouse_id=warehouse_id)
-    session.add(order)
+    united_order = UnitedOrder(id=united_order_id, warehouse_id=warehouse_id)
+    session.add(united_order)
     await session.commit()
-    return order
+    return united_order
 
 
-async def get_united_order_by_id(session: AsyncSession, united_order_id: str):
+async def get_united_order_by_id(session: AsyncSession, united_order_id: str) -> UnitedOrder | None:
     stmt = (
         select(UnitedOrder)
         .options(selectinload(UnitedOrder.orders_relationship), selectinload(UnitedOrder.employee_relationship))
         .where(UnitedOrder.id == united_order_id)
     )
     result = await session.execute(stmt)
-    order = result.scalar_one_or_none()
+    united_order = result.scalar_one_or_none()
 
-    return order
+    return united_order
 
 
 async def get_order_by_id(session: AsyncSession, order_id: str) -> Order | None:
@@ -52,7 +57,7 @@ async def create_order(
         united_order_id: str,
         order_schema: OrderSchema,
         warehouse_id: int
-):
+) -> str:
 
     phone = normalize_phone(order_schema.customer_phone)
 
@@ -82,7 +87,7 @@ async def create_order(
     return order.id
 
 
-async def get_united_orders(session: AsyncSession, warehouse_id: int):
+async def get_united_orders(session: AsyncSession, warehouse_id: int) -> Sequence[UnitedOrder]:
     stmt = (select(UnitedOrder)
             .options(selectinload(UnitedOrder.employee_relationship))
             .where(UnitedOrder.warehouse_id == warehouse_id))
@@ -111,7 +116,12 @@ async def get_all_orders(
     return [order for order in scalars_result]
 
 
-async def give_out(session: AsyncSession, order_id: str, given_by: int, comment: str | None) -> Order | None:
+async def give_out(
+        session: AsyncSession,
+        order_id: str,
+        given_by: int,
+        comment: str | None
+) -> Order | None:
 
     stmt = (
         select(Order)
@@ -181,3 +191,54 @@ async def delete_united_order(
     await session.close()
 
 
+async def get_united_orders_by_date(
+        session: AsyncSession,
+        warehouse_id: int,
+        date_min: date,
+        date_max: date
+) -> list[UnitedOrder]:
+    stmt = (select(UnitedOrder)
+            .options(selectinload(UnitedOrder.orders_relationship))
+            .where(UnitedOrder.warehouse_id == warehouse_id)
+            .where(UnitedOrder.delivered == True)
+            .where(UnitedOrder.delivery_date >= date_min)
+            .where(UnitedOrder.delivery_date <= date_max)
+    )
+    result = await session.execute(stmt)
+    united_orders = list(result.scalars())
+
+    return united_orders
+
+
+async def get_order_cost(
+        session: AsyncSession,
+        order_id: str
+) -> int:
+    total_order_sum = 0
+
+    order = await get_order_by_id(
+        session=session,
+        order_id=order_id
+    )
+
+    for association in order.products_details:
+        product = await get_product_by_id(
+            session=session,
+            product_id=association.product_id
+        )
+        total_order_sum += product.price*association.amount
+
+    return total_order_sum
+
+
+async def get_united_order_price(
+        session: AsyncSession,
+        united_order: UnitedOrder
+) -> int:
+    total_united_order_sum = 0
+
+    for order in united_order.orders_relationship:
+        order_cost = await get_order_cost(session=session, order_id=order.id)
+        total_united_order_sum += order_cost
+
+    return total_united_order_sum

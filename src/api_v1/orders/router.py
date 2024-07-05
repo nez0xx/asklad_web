@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +24,22 @@ router = APIRouter(
     tags=["Orders"],
     dependencies=[Depends(http_bearer), Depends(check_user_is_verify),] #Depends(check_active_subscription_depends)]
 )
+
+
+@router.get(path="/get_price")
+async def get_price(
+        date_min: date = date.today() - timedelta(days=30),
+        date_max: date = date.today(),
+        warehouse: Warehouse = Depends(get_own_warehouse_dependency),
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
+):
+    result = await service.get_total_united_orders_cost(
+        session=session,
+        warehouse=warehouse,
+        date_min=date_min,
+        date_max=date_max
+    )
+    return result
 
 
 @router.get(path="/all")
@@ -160,6 +176,10 @@ async def get_issue_list(
         warehouse=warehouse
     )
     return FileResponse(path=filename, filename='Лист выдачи.xlsx', media_type='multipart/form-data')
+
+
+
+
 
 
 

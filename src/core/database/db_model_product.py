@@ -15,3 +15,6 @@ class Product(Base):
     orders_details: Mapped[list["ProductOrderAssociation"]] = relationship(
         back_populates="product_relationship",
     )
+
+    def __repr__(self):
+        return f"{self.id} {self.title}"

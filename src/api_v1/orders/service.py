@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -350,6 +352,32 @@ async def create_issue_list(session: AsyncSession, united_order_id: str, warehou
     filename = await create_payment_list_excel(orders)
     return filename
 
+
+async def get_total_united_orders_cost(
+        session: AsyncSession,
+        warehouse: Warehouse,
+        date_min: date,
+        date_max: date = date.today()
+) -> dict[str: int]:
+    total_sum = 0
+
+    united_orders = await crud.get_united_orders_by_date(
+        session=session,
+        warehouse_id=warehouse.id,
+        date_min=date_min,
+        date_max=date_max
+    )
+    print(united_orders, "united")
+    for united_order in united_orders:
+        united_order_cost = await crud.get_united_order_price(
+            session=session,
+            united_order=united_order
+        )
+        print(united_order)
+        print(united_order_cost)
+        total_sum += united_order_cost
+
+    return {"rub": total_sum}
 
 
 
