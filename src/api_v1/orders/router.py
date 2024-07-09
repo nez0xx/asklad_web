@@ -26,7 +26,7 @@ router = APIRouter(
 )
 
 
-@router.get(path="/get_price")
+@router.get(path="/fin_report")
 async def get_price(
         date_min: date = date.today() - timedelta(days=30),
         date_max: date = date.today(),
@@ -93,7 +93,7 @@ async def get_order(
     user: User = Depends(get_current_user)
 ):
 
-    order = await service.get_order(
+    order = await service.get_order_service(
         session=session,
         employee_id=user.id,
         order_id=order_id
@@ -123,7 +123,7 @@ async def give_order_out(
         user: User = Depends(get_current_user)
 ):
 
-    order = await service.give_order_out(
+    order = await service.give_order_out_service(
         session=session,
         order_id=order_id,
         employee_id=user.id,
@@ -139,13 +139,13 @@ async def give_order_out(
         )
 
 
-@router.post(path="/notify")
-async def notify_customers(
+@router.post(path="/delivery")
+async def delivery_united_order(
         united_order_id: str,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
-    await service.notify_customers(
+    await service.delivery_united_order_service(
         session=session,
         united_order_id=united_order_id,
         user=user
@@ -164,15 +164,15 @@ async def delete_united_order(
     return "Order had been deleted"
 
 
-@router.get(path="/blank/{united_order_id}")
+@router.post(path="/blank/")
 async def get_issue_list(
-        united_order_id: str,
+        united_order_ids: list[str],
         warehouse: Warehouse = Depends(get_warehouse_dependency),
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
 ):
     filename = await service.create_issue_list(
         session=session,
-        united_order_id=united_order_id,
+        united_order_ids=united_order_ids,
         warehouse=warehouse
     )
     return FileResponse(path=filename, filename='Лист выдачи.xlsx', media_type='multipart/form-data')

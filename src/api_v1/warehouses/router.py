@@ -128,7 +128,6 @@ async def delete_warehouse(
 async def delete_employee_view(
         employee_id: int,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user),
         warehouse: Warehouse = Depends(get_own_warehouse_dependency)
 ):
     await service.delete_employee(

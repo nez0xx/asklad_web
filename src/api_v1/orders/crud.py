@@ -77,9 +77,9 @@ async def create_order(
             product_schema=product_schema
         )
         session.add(ProductOrderAssociation(
-            product=product,
+            product_id=product.id,
             amount=product_schema.amount,
-            order=order
+            order_id=order.id
         ))
 
     session.add(order)
@@ -91,8 +91,10 @@ async def get_united_orders(session: AsyncSession, warehouse_id: int) -> Sequenc
     stmt = (select(UnitedOrder)
             .options(selectinload(UnitedOrder.employee_relationship))
             .where(UnitedOrder.warehouse_id == warehouse_id))
+
     result = await session.execute(stmt)
-    orders = result.scalars().all()
+    orders = list(result.scalars())
+
     return orders
 
 
@@ -116,7 +118,7 @@ async def get_all_orders(
     return [order for order in scalars_result]
 
 
-async def give_out(
+async def give_order_out(
         session: AsyncSession,
         order_id: str,
         given_by: int,

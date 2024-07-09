@@ -1,8 +1,8 @@
 from datetime import timedelta
 
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, status, Depends, Request
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer
-from jwt import InvalidTokenError
+from jwt import InvalidTokenError, ExpiredSignatureError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.api_v1.utils
@@ -46,28 +46,32 @@ def get_current_token_payload(token=Depends(oauth2_scheme)):
 
 
 async def get_current_user_for_refresh(
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        payload=Depends(get_current_token_payload)
+        request: Request,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
 ):
     unauthed_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="invalid username or password",
+        detail="Refresh token is None",
     )
-    if payload[TOKEN_TYPE_FIELD] != REFRESH_TOKEN_TYPE:
 
+    refresh_token = request.cookies.get("refresh_token")
+    if refresh_token is None:
+        raise unauthed_exc
+
+    try:
+        payload = src.api_v1.utils.decode_jwt(refresh_token)
+    except ExpiredSignatureError:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid token type: refresh expected"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Signature has expired",
         )
 
     user = await get_user_by_email(
         session=session,
         email=payload["sub"]
     )
-
     if user:
         return user
-
     raise unauthed_exc
 
 
@@ -98,7 +102,11 @@ def create_refresh_token(user_email):
     payload = {
         "sub": user_email
     }
-    refresh_token = create_jwt(REFRESH_TOKEN_TYPE, payload, expire_minutes=10)
+    refresh_token = create_jwt(
+        token_type=REFRESH_TOKEN_TYPE,
+        payload=payload,
+        expire_minutes=settings.auth_jwt.refresh_token_expire_minutes
+    )
     return refresh_token
 
 

@@ -1,5 +1,7 @@
 from datetime import date
+from typing import Sequence
 
+import requests
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,14 +13,21 @@ from src.api_v1.orders.schemas import UnitedOrderSchema, OrderSchema
 from src.api_v1.orders.utils import parse_excel, create_payment_list_excel
 from src.api_v1.warehouses.crud import get_user_own_warehouse, get_warehouse_by_id, get_user_available_warehouse
 from src.api_v1.warehouses.utils import check_user_in_employees
-from src.core.database import Warehouse, User
-from src.core.settings import BASE_DIR
+from src.core.database import Warehouse, User, Order, UnitedOrder
+from src.core.settings import BASE_DIR, settings
 from src.parser import parse
 from .products.schemas import ProductSchema
 from .utils import normalize_phone
 
 
-async def add_united_order(session: AsyncSession, united_order_schema: UnitedOrderSchema, employee_id: int):
+NOTIFICATION_BOT_URL = settings.NOTIFICATION_BOT_URL
+
+
+async def add_united_order_service(
+        session: AsyncSession,
+        united_order_schema: UnitedOrderSchema,
+        employee_id: int
+) -> str:
 
     await check_user_in_employees(
         session=session,
@@ -72,17 +81,16 @@ async def add_united_order(session: AsyncSession, united_order_schema: UnitedOrd
     return united_order_schema.united_order_id
 
 
-async def get_order(
+async def get_order_service(
         session: AsyncSession,
         employee_id: int,
         order_id: str
 ):
-    print("1"*100)
     order = await crud.get_order_by_id(
         session=session,
         order_id=order_id
     )
-    print("ВСЕ НОРМ"*100)
+
     if order is None:
         return None
 
@@ -136,21 +144,11 @@ async def get_all_orders(
     return orders
 
 
-async def get_orders_in_warehouse(
+async def united_order_info(
         session: AsyncSession,
-        warehouse_id: int,
-        employee_id: int,
-        is_given_out: bool = None
+        order_id: str,
+        employee_id: int
 ):
-    orders = await crud.get_all_orders(
-        session=session,
-        warehouse_id=warehouse_id,
-        is_given_out=is_given_out
-    )
-    return orders
-
-
-async def united_order_info(session: AsyncSession, order_id: str, employee_id: int):
     order = await get_united_order_by_id(session, order_id)
     if order is None:
         raise HTTPException(
@@ -162,7 +160,10 @@ async def united_order_info(session: AsyncSession, order_id: str, employee_id: i
     return order
 
 
-async def get_united_orders(session: AsyncSession, warehouse_id: int):
+async def get_united_orders(
+        session: AsyncSession,
+        warehouse_id: int
+) -> Sequence[UnitedOrder]:
     orders = await crud.get_united_orders(
         session=session,
         warehouse_id=warehouse_id
@@ -170,7 +171,12 @@ async def get_united_orders(session: AsyncSession, warehouse_id: int):
     return orders
 
 
-async def give_order_out(session: AsyncSession, order_id: str, employee_id: int, comment: str | None):
+async def give_order_out_service(
+        session: AsyncSession,
+        order_id: str,
+        employee_id: int,
+        comment: str | None
+):
     order = await crud.get_order_by_id(
         session=session,
         order_id=order_id
@@ -199,14 +205,18 @@ async def give_order_out(session: AsyncSession, order_id: str, employee_id: int,
         employee_id=employee_id
     )
 
-    order = await crud.give_out(
+    order = await crud.give_order_out(
         session=session,
         order_id=order_id,
         given_by=employee_id,
         comment=comment
     )
 
-    return order
+    if order is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order does not exist"
+        )
 
 
 async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee_id: int, warehouse_id: int):
@@ -214,7 +224,7 @@ async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee
     united_orders = await parse_excel(file)
     united_orders_ids = []
 
-    # проверка на отстутствие заказов в бд
+    # проверка на возможное отстутствие заказов в бд
     for united_order in united_orders:
         united_order_id = united_order["united_order_id"]
         united_order = await crud.get_united_order_by_id(session, united_order_id)
@@ -229,7 +239,7 @@ async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee
         print(united_order)
         united_order["warehouse_id"] = warehouse_id
         schema = UnitedOrderSchema(**united_order)
-        united_order_id = await add_united_order(session, schema, employee_id=employee_id)
+        united_order_id = await add_united_order_service(session, schema, employee_id=employee_id)
         united_orders_ids.append(united_order_id)
 
     return united_orders_ids
@@ -238,8 +248,46 @@ async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee
 async def notify_customers(
         session: AsyncSession,
         united_order_id: str,
-        user: User
+        warehouse_name: str
 ) -> int:
+    orders = await crud.get_orders_in_united_order(
+        session=session,
+        united_order_id=united_order_id
+    )
+
+    data = []
+
+    for order in orders:
+        order_info = OrderSchema(
+            customer_phone=normalize_phone(order.customer_phone),
+            warehouse_name=warehouse_name,
+            order_id=order.id,
+            products_list=[]
+        )
+        for assoc in order.products_details:
+            product = await get_product_by_id(
+                session=session,
+                product_id=assoc.product_id
+            )
+
+            order_info.products_list.append(
+                ProductSchema(
+                    title=product.title,
+                    amount=assoc.amount
+                )
+            )
+        data.append(order_info.model_dump())
+
+    request = requests.post(url=NOTIFICATION_BOT_URL, json=data)
+
+    return request.status_code
+
+
+async def delivery_united_order_service(
+        session: AsyncSession,
+        united_order_id: str,
+        user: User
+):
 
     united_order = await crud.get_united_order_by_id(
         session=session,
@@ -268,51 +316,24 @@ async def notify_customers(
         warehouse_id=warehouse.id
     )
 
-    orders = await crud.get_orders_in_united_order(
-        session=session,
-        united_order_id=united_order_id
+    # изменить схемы!!
+    status_code = await notify_customers(
+        session=session, 
+        united_order_id=united_order_id, 
+        warehouse_name=warehouse.name
     )
-
-    data = []
-    '''
-    for order in orders:
-        order_info = OrderInfoSchema(
-            customer_phone=normalize_phone(order.customer_phone),
-            warehouse_name=warehouse.name,
-            order_id=order.id,
-            products_list=[]
-        )
-        for assoc in order.products_details:
-
-            product = await get_product_by_id(
-                session=session,
-                product_id=assoc.product_id
-            )
-
-            order_info.products_list.append(
-                ProductSchema(
-                    title=product.title,
-                    amount=assoc.amount
-                )
-            )
-        data.append(order_info.model_dump())
-
-    request = requests.post(url="http://127.0.0.1:9000", json=data)
-
-    if request.status_code == 200:
+    
+    if status_code == 200:
         await crud.delivery_united_order(
             session=session,
             united_order=united_order
         )
 
-    return request.status_code
-    '''
     await crud.delivery_united_order(
         session=session,
         united_order=united_order,
         employee_id=user.id
     )
-    return 1
 
 
 async def delete_united_order(
@@ -336,20 +357,30 @@ async def delete_united_order(
     )
 
 
-async def create_issue_list(session: AsyncSession, united_order_id: str, warehouse: Warehouse):
-    united_order = await get_united_order_by_id(session=session, united_order_id=united_order_id)
-    if united_order is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"United order {united_order_id} does not exist"
-        )
-    if united_order.warehouse_id != warehouse.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="The united order belongs to another warehouse"
-        )
-    orders = united_order.orders_relationship
-    filename = await create_payment_list_excel(orders)
+async def create_issue_list(
+        session: AsyncSession,
+        united_order_ids: list[str],
+        warehouse: Warehouse
+) -> str:
+    united_orders = []
+    for united_order_id in united_order_ids:
+
+        united_order = await get_united_order_by_id(session=session, united_order_id=united_order_id)
+
+        if united_order is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"United order {united_order_id} does not exist"
+            )
+
+        if united_order.warehouse_id != warehouse.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="The united order belongs to another warehouse"
+            )
+        united_orders.append(united_order)
+        orders = united_order.orders_relationship
+    filename = await create_payment_list_excel(united_orders)
     return filename
 
 
@@ -358,7 +389,11 @@ async def get_total_united_orders_cost(
         warehouse: Warehouse,
         date_min: date,
         date_max: date = date.today()
-) -> dict[str: int]:
+) -> dict:
+    data = {
+        "total_sum": {},
+        "orders": {}
+    }
     total_sum = 0
 
     united_orders = await crud.get_united_orders_by_date(
@@ -376,8 +411,12 @@ async def get_total_united_orders_cost(
         print(united_order)
         print(united_order_cost)
         total_sum += united_order_cost
+        data["orders"][united_order.id] = {}
+        data["orders"][united_order.id]["rub"] = united_order_cost
 
-    return {"rub": total_sum}
+    data["total_sum"]["rub"] = total_sum
+
+    return data
 
 
 

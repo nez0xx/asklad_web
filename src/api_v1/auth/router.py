@@ -1,7 +1,7 @@
 from fastapi.security import HTTPBasic, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.database import db_helper, User
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Response, Request
 from . import service
 
 
@@ -52,8 +52,7 @@ async def auth_user_issue_jwt(
     response.set_cookie(key='refresh_token', value=refresh_token, httponly=True)
 
     return TokenInfo(
-        access_token=access_token,
-        refresh_token=refresh_token
+        access_token=access_token
     )
 
 
@@ -79,8 +78,8 @@ async def change_password(
 
 
 @router.get("/refresh")
-def get_refresh_token(
-        user: UserSchema = Depends(get_current_user_for_refresh)
+def refresh(
+        user: User = Depends(get_current_user_for_refresh)
 ):
     access_token = create_access_token(user.email)
 

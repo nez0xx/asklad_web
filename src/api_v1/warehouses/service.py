@@ -17,7 +17,11 @@ from src.smtp import send_email
 from sqlalchemy.exc import IntegrityError
 
 
-async def check_user_is_owner(session: AsyncSession, warehouse_id: int, owner_id: int):
+async def check_user_is_owner(
+        session: AsyncSession,
+        warehouse_id: int,
+        owner_id: int
+):
     wh = await crud.get_warehouse_by_id_and_owner(session=session, warehouse_id=warehouse_id, owner_id=owner_id)
     if wh:
         return True
@@ -28,8 +32,10 @@ async def check_user_is_owner(session: AsyncSession, warehouse_id: int, owner_id
     )
 
 
-async def create_warehouse(session: AsyncSession, schema: WarehouseCreateSchema):
-
+async def create_warehouse(
+        session: AsyncSession,
+        schema: WarehouseCreateSchema
+):
     warehouse = await crud.get_user_available_warehouse(
         session=session,
         employee_id=schema.owner_id
@@ -45,10 +51,15 @@ async def create_warehouse(session: AsyncSession, schema: WarehouseCreateSchema)
     association = WarehouseEmployeeAssociation(user_id=schema.owner_id, warehouse_id=warehouse.id)
     session.add(association)
     await session.commit()
+
     return warehouse
 
 
-async def send_employee_invite(session: AsyncSession, employee_id: int, warehouse: Warehouse):
+async def send_employee_invite(
+        session: AsyncSession,
+        employee_id: int,
+        warehouse: Warehouse
+):
     employee = await get_user_by_id(session, employee_id)
     if employee is None:
         raise HTTPException(
@@ -102,8 +113,10 @@ async def confirm_employee_invite(
         )
 
 
-async def warehouse_info(session: AsyncSession, employee_id: int, warehouse_id: int):
-
+async def warehouse_info(
+        session: AsyncSession,
+        employee_id: int
+):
     warehouse = await crud.get_user_available_warehouse(
         session=session,
         employee_id=employee_id
@@ -113,8 +126,11 @@ async def warehouse_info(session: AsyncSession, employee_id: int, warehouse_id: 
     return warehouse
 
 
-async def delete_employee(session: AsyncSession, employee_id: int, warehouse: Warehouse):
-
+async def delete_employee(
+        session: AsyncSession,
+        employee_id: int,
+        warehouse: Warehouse
+):
     if warehouse is None:
         raise WarehouseDoesNotExist()
 

@@ -2,14 +2,13 @@ FROM python:3.12
 
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y sqlite3 && \
     apt-get -y install uvicorn
 
 WORKDIR /home/api
 
 COPY pyproject.toml /home/api
 
-RUN pip3.12 install --no-cache-dir poetry
+RUN pip3.12 install poetry
 
 RUN poetry install
 

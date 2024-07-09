@@ -4,7 +4,8 @@ from datetime import datetime
 import httpx
 from fastapi import UploadFile, HTTPException, status
 
-from src.core.database import Order
+from src.api_v1.orders.schemas import UnitedOrderSchema
+from src.core.database import Order, UnitedOrder
 from src.core.settings import BASE_DIR, settings
 from src.parser import parse
 
@@ -51,7 +52,7 @@ async def parse_excel(file: UploadFile, ):
     return united_orders
 
 
-async def create_payment_list_excel(orders: list[Order]):
+async def create_payment_list_excel(united_orders: list[UnitedOrder]):
     wb = openpyxl.Workbook()
     wb.create_sheet(title='Первый лист', index=0)
 
@@ -63,32 +64,52 @@ async def create_payment_list_excel(orders: list[Order]):
 
     # получаем лист, с которым будем работать
     sheet = wb['Первый лист']
-    sheet.cell(row=2, column=1, value="ID Заказа").style = 'highlight'
-    sheet.cell(row=2, column=2, value="ФИО").style = 'highlight'
-    sheet.cell(row=2, column=3, value="Телефон").style = 'highlight'
-    sheet.cell(row=2, column=4, value="Дата выдачи").style = 'highlight'
-    sheet.cell(row=2, column=5, value="Подпись клиента").style = 'highlight'
 
-    for i in range(len(orders)):
-        row = i+3
-        order = orders[i]
 
-        sheet.cell(row=row, column=1, value=order.id).style = 'highlight'
-        sheet.cell(row=row, column=2, value=order.customer_name).style = 'highlight'
-        sheet.cell(row=row, column=3, value=order.customer_phone).style = 'highlight'
-        sheet.cell(row=row, column=4).style = 'highlight'
-        sheet.cell(row=row, column=5).style = 'highlight'
 
-        sheet.row_dimensions[row].height = 30
+    cur_row = 1
+
+    for united_order in united_orders:
+        sheet.cell(row=cur_row, column=2, value=united_order.id).style = 'highlight'
+        cur_row += 1
+
+        sheet.cell(row=cur_row, column=2, value="ID Заказа").style = 'highlight'
+        sheet.cell(row=cur_row, column=3, value="ФИО").style = 'highlight'
+        sheet.cell(row=cur_row, column=4, value="Телефон").style = 'highlight'
+        sheet.cell(row=cur_row, column=5, value="Дата выдачи").style = 'highlight'
+        sheet.cell(row=cur_row, column=6, value="Подпись клиента").style = 'highlight'
+        cur_row += 1
+
+
+        orders = united_order.orders_relationship
+
+        for i in range(len(orders)):
+
+            order = orders[i]
+
+            sheet.cell(row=cur_row, column=1, value=str(i)).style = 'highlight'
+            sheet.cell(row=cur_row, column=2, value=order.id).style = 'highlight'
+            sheet.cell(row=cur_row, column=3, value=order.customer_name).style = 'highlight'
+            sheet.cell(row=cur_row, column=4, value=order.customer_phone).style = 'highlight'
+            sheet.cell(row=cur_row, column=5).style = 'highlight'
+            sheet.cell(row=cur_row, column=6).style = 'highlight'
+
+            sheet.row_dimensions[cur_row].height = 30
+
+            cur_row += 1
+
+
+        cur_row += 1
+
+
     #sheet.row_dimensions[1].height = 70
 
-    sheet.column_dimensions['A'].width = 15
-    sheet.column_dimensions['B'].width = 50
-    sheet.column_dimensions['C'].width = 20
-    sheet.column_dimensions['D'].width = 15
-    sheet.column_dimensions['E'].width = 20
-
-
+    sheet.column_dimensions['A'].width = 5
+    sheet.column_dimensions['B'].width = 20
+    sheet.column_dimensions['C'].width = 50
+    sheet.column_dimensions['D'].width = 16
+    sheet.column_dimensions['E'].width = 15
+    sheet.column_dimensions['F'].width = 20
 
     date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     filename = f"{date}_payment.xlsx"
