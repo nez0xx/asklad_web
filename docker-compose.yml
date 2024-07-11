@@ -28,29 +28,26 @@ services:
     image: api_v1:latest
     env_file:
       - .env
-    container_name: api
     ports:
       - "80:9999"
     depends_on:
       - database_api
       - notifications_bot
 
+  notifications_bot:
+    image: notifications_bot:latest
+    env_file:
+      - .env
+    ports:
+      - "9999:9000"
+    depends_on:
+      - database_bot
+
   support_bot:
     image: support_bot:latest
     env_file:
       - .env
     container_name: sup_bot
-
-
-  notifications_bot:
-    image: notification_bot:latest
-    env_file:
-      - .env
-    container_name: notif_bot
-    ports:
-      - "9999:9000"
-    depends_on:
-      - database_bot
 
 volumes:
   db_bot_volume:

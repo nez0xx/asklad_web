@@ -6,14 +6,12 @@ RUN apt-get update && \
 
 WORKDIR /home/api
 
-COPY pyproject.toml /home/api
+COPY requirements.txt .
 
-RUN pip3.12 install poetry
-
-RUN poetry install
+RUN pip3.12 install -r requirements.txt
 
 COPY . .
 
 ENV PYTHONPATH=/home/api
 
-CMD ["poetry", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "9999"]
+CMD ["./startup.sh"]

@@ -69,6 +69,7 @@ async def create_order(
         warehouse_id=warehouse_id,
         united_order_id=united_order_id
     )
+    session.add(order)
 
     for product_schema in order_schema.products:
 
@@ -82,7 +83,6 @@ async def create_order(
             order_id=order.id
         ))
 
-    session.add(order)
     await session.commit()
     return order.id
 

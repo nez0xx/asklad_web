@@ -33,6 +33,14 @@ class ProductTgSchema(BaseModel):
     amount: int
 
 
+class OrderTgSchema(BaseModel):
+    customer_phone: str
+    order_id: str
+    warehouse_name: str
+    products_list: list[ProductTgSchema]
+
+
+
 
 
 

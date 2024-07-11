@@ -9,7 +9,7 @@ from src.api_v1.orders import crud, utils
 from src.api_v1.orders.crud import get_order_by_id, create_order, create_united_order, get_united_order_by_id
 from src.api_v1.orders.customers.crud import get_or_create_customer
 from src.api_v1.orders.products.crud import get_product_by_id
-from src.api_v1.orders.schemas import UnitedOrderSchema, OrderSchema
+from src.api_v1.orders.schemas import UnitedOrderSchema, OrderSchema, OrderTgSchema, ProductTgSchema
 from src.api_v1.orders.utils import parse_excel, create_payment_list_excel
 from src.api_v1.warehouses.crud import get_user_own_warehouse, get_warehouse_by_id, get_user_available_warehouse
 from src.api_v1.warehouses.utils import check_user_in_employees
@@ -258,7 +258,7 @@ async def notify_customers(
     data = []
 
     for order in orders:
-        order_info = OrderSchema(
+        order_info = OrderTgSchema(
             customer_phone=normalize_phone(order.customer_phone),
             warehouse_name=warehouse_name,
             order_id=order.id,
@@ -271,7 +271,7 @@ async def notify_customers(
             )
 
             order_info.products_list.append(
-                ProductSchema(
+                ProductTgSchema(
                     title=product.title,
                     amount=assoc.amount
                 )

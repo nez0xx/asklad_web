@@ -1,8 +1,8 @@
-"""
+"""first
 
-Revision ID: 29f4e9570f84
+Revision ID: 321adcf718d3
 Revises: 
-Create Date: 2024-07-03 19:27:17.615873
+Create Date: 2024-07-11 16:24:06.313801
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '29f4e9570f84'
+revision: str = '321adcf718d3'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -31,13 +31,22 @@ def upgrade() -> None:
     sa.Column('price', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('tariffs',
+    sa.Column('tariff_name', sa.String(), nullable=False),
+    sa.Column('price_rub', sa.Integer(), nullable=False),
+    sa.Column('price_byn', sa.Integer(), nullable=False),
+    sa.Column('price_kzt', sa.Integer(), nullable=False),
+    sa.Column('expire_days', sa.Integer(), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('users',
     sa.Column('hashed_password', sa.String(), nullable=False),
     sa.Column('email', sa.String(length=40), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('is_admin', sa.Boolean(), server_default=sa.text('false'), nullable=False),
     sa.Column('is_verify', sa.Boolean(), server_default=sa.text('false'), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
@@ -56,7 +65,9 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('is_active', sa.Boolean(), server_default=sa.text('false'), nullable=False),
+    sa.Column('tariff_id', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['tariff_id'], ['tariffs.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -129,6 +140,7 @@ def downgrade() -> None:
     op.drop_table('subscriptions')
     op.drop_table('resettokens')
     op.drop_table('users')
+    op.drop_table('tariffs')
     op.drop_table('products')
     op.drop_table('customers')
     # ### end Alembic commands ###

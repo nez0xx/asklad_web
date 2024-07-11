@@ -10,7 +10,8 @@ __all__ = (
     'Subscription',
     'ProductOrderAssociation',
     'ResetToken',
-    'WarehouseEmployeeAssociation'
+    'WarehouseEmployeeAssociation',
+    'Tariff'
 )
 
 from .db_helper import db_helper
@@ -25,4 +26,4 @@ from .db_model_warehouse import Warehouse
 from .db_model_subscription import Subscription
 from .db_model_reset_token import ResetToken
 from .db_model_warehouse_employee_association import WarehouseEmployeeAssociation
-
+from .db_model_tariff import Tariff

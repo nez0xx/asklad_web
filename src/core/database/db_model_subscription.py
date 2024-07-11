@@ -1,9 +1,14 @@
 from datetime import datetime, timezone, timedelta
+from typing import TYPE_CHECKING
 
 from sqlalchemy import text, func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.core.database import User, Base
+from src.core.database import Base
+
+if TYPE_CHECKING:
+    from .db_model_user import User
+    from .db_model_tariff import Tariff
 
 
 class Subscription(Base):
@@ -39,10 +44,13 @@ class Subscription(Base):
     freekassa_payment_relationship: Mapped["FreekassaPayment"] = relationship(
         back_populates="subscription_relationship"
     )
-    tariff: Mapped["Tariff"] = relationship(
-        backref="subscription"
-    )
     '''
+    tariff_id: Mapped[int] = mapped_column(ForeignKey("tariffs.id"))
+
+    tariff_relationship: Mapped["Tariff"] = relationship(
+        back_populates="subscriptions_relationship"
+    )
+
 
     def __str__(self):
         return f"{self.__class__.__name__} | {self.user}"
