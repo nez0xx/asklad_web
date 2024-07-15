@@ -25,7 +25,7 @@ async def products_list(
     products = []
 
     for elem in results:
-        products.append(ProductInWarehouseSchema(title=elem[0].product.title, amount=elem[1]))
+        products.append(ProductInWarehouseSchema(title=elem[0].title, amount=elem[1]))
 
     return products
 

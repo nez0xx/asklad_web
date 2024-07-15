@@ -14,6 +14,8 @@ class OrderSchema(BaseModel):
 
     customer_id: str
 
+    given_by: str | None = None
+
     products: list[ProductSchema]
 
 

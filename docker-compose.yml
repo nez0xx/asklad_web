@@ -12,17 +12,17 @@ services:
     volumes:
       - db_api_volume:/var/lib/postgresql/data
 
-  database_bot:
-    image: postgres:15
-    ports:
-      - "8890:5432"
-    environment:
-      POSTGRES_DB: "db_bot"
-      POSTGRES_USER: "root"
-      POSTGRES_PASSWORD: "root"
-
-    volumes:
-      - db_bot_volume:/var/lib/postgresql/data
+  #database_bot:
+  #  image: postgres:15
+  #  ports:
+  #    - "8890:5433"
+  #  environment:
+  #    POSTGRES_DB: "db_bot"
+  #    POSTGRES_USER: "root"
+  #    POSTGRES_PASSWORD: "root"
+  #
+  #  volumes:
+  #    - db_bot_volume:/var/lib/postgresql/data
 
   api:
     image: api_v1:latest
@@ -32,23 +32,22 @@ services:
       - "80:9999"
     depends_on:
       - database_api
-      - notifications_bot
+      #- notifications_bot
 
-  notifications_bot:
-    image: notifications_bot:latest
-    env_file:
-      - .env
-    ports:
-      - "9999:9000"
-    depends_on:
-      - database_bot
+  #notifications_bot:
+  #  image: notifications_bot:latest
+  #  env_file:
+  #    - .env
+  #  ports:
+  #    - "9999:9000"
+  #  depends_on:
+  #    - database_bot
 
-  support_bot:
-    image: support_bot:latest
-    env_file:
-      - .env
-    container_name: sup_bot
+  #support_bot:
+  #  image: support_bot:latest
+  #  env_file:
+  #    - .env
 
 volumes:
-  db_bot_volume:
+  #db_bot_volume:
   db_api_volume:

@@ -41,7 +41,7 @@ async def get_order_by_id(session: AsyncSession, order_id: str) -> Order | None:
 
     stmt = (
         select(Order)
-        .options(selectinload(Order.products_details))
+        .options(selectinload(Order.products_details), selectinload(Order.given_by_relationship))
         .where(Order.id == order_id)
     )
 
@@ -101,7 +101,8 @@ async def get_united_orders(session: AsyncSession, warehouse_id: int) -> Sequenc
 async def get_all_orders(
         session: AsyncSession,
         warehouse_id: int,
-        is_given_out: bool | None = None
+        is_given_out: bool | None = None,
+        search_string: str | None = None
 ) -> list[Order] | None:
 
     stmt = (
@@ -109,7 +110,8 @@ async def get_all_orders(
         .options(selectinload(Order.products_details), selectinload(Order.customer_relationship))
         .where(Order.warehouse_id == warehouse_id)
     )
-
+    if search_string:
+        stmt = stmt.where(Order.id.contains(search_string))
     if is_given_out is not None:
         stmt = stmt.where(Order.is_given_out == is_given_out)
 

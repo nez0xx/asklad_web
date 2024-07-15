@@ -27,21 +27,20 @@ async def create_product(session: AsyncSession, product_schema: ProductSchema):
 
 async def get_products_in_warehouse(session: AsyncSession, warehouse_id: int):
 
-    stmt = (select(ProductOrderAssociation, func.sum(ProductOrderAssociation.amount))
-            .options(
-        joinedload(ProductOrderAssociation.order_relationship),
-        joinedload(ProductOrderAssociation.product),
-    )
-            .join(Order)
+    stmt = (select(Product, func.sum(ProductOrderAssociation.amount))
+            .join(ProductOrderAssociation, ProductOrderAssociation.product_id == Product.id)
+            .join(Order, ProductOrderAssociation.order_id == Order.id)
             .join(UnitedOrder, Order.united_order_id == UnitedOrder.id)
             .where(Order.warehouse_id == warehouse_id)
             .where(Order.is_given_out == False)
             .where(UnitedOrder.delivered == True)
-            .group_by(ProductOrderAssociation.product_id))
+            .group_by(Product.id))
 
     result = await session.execute(stmt)
     products = result.all()
     print(products)
+    for i in products:
+        print(i)
     return products
 
 

@@ -14,4 +14,6 @@ COPY . .
 
 ENV PYTHONPATH=/home/api
 
+RUN chmod a+x startup.sh
+
 CMD ["./startup.sh"]

@@ -8,7 +8,8 @@ from .db_model_order_product_association import ProductOrderAssociation
 
 if TYPE_CHECKING:
     from src.core.database import (Customer,
-                                   UnitedOrder)
+                                   UnitedOrder,
+                                   User)
 
 
 class Order(Base):
@@ -43,6 +44,8 @@ class Order(Base):
     issue_date: Mapped[date] = mapped_column(nullable=True)
 
     given_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)  # кем выдан
+
+    given_by_relationship: Mapped["User"] = relationship(back_populates="")
 
     comment: Mapped[str] = mapped_column(nullable=True)
 

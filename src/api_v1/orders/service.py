@@ -108,6 +108,9 @@ async def get_order_service(
         products=[]
     )
 
+    if order.given_by_relationship != None:
+        order_schema.given_by = order.given_by_relationship.name
+
     for association in order.products_details:
         product = await get_product_by_id(
             session=session,
@@ -123,10 +126,11 @@ async def get_order_service(
     return order_schema
 
 
-async def get_all_orders(
+async def get_all_orders_service(
         session: AsyncSession,
         employee_id: int,
-        is_given_out: bool | None
+        is_given_out: bool | None,
+        search_string: str | None = None,
 ):
     warehouse = await get_user_available_warehouse(session, employee_id)
 
@@ -138,13 +142,14 @@ async def get_all_orders(
     orders = await crud.get_all_orders(
             session=session,
             warehouse_id=warehouse.id,
-            is_given_out=is_given_out
+            is_given_out=is_given_out,
+            search_string=search_string
         )
 
     return orders
 
 
-async def united_order_info(
+async def get_united_order_service(
         session: AsyncSession,
         order_id: str,
         employee_id: int
@@ -187,6 +192,12 @@ async def give_order_out_service(
             detail=f"Order with id {order_id} does not exist"
         )
 
+    if order.is_given_out:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Заказ уже выдан"
+        )
+
     united_order = await get_united_order_by_id(
         session=session,
         united_order_id=order.united_order_id
@@ -218,6 +229,7 @@ async def give_order_out_service(
             detail="Order does not exist"
         )
 
+    return order
 
 async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee_id: int, warehouse_id: int):
 
@@ -317,6 +329,7 @@ async def delivery_united_order_service(
     )
 
     # изменить схемы!!
+    '''
     status_code = await notify_customers(
         session=session, 
         united_order_id=united_order_id, 
@@ -328,7 +341,7 @@ async def delivery_united_order_service(
             session=session,
             united_order=united_order
         )
-
+    '''
     await crud.delivery_united_order(
         session=session,
         united_order=united_order,
