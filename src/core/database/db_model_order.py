@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from sqlalchemy import ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -48,6 +48,11 @@ class Order(Base):
     given_by_relationship: Mapped["User"] = relationship(back_populates="")
 
     comment: Mapped[str] = mapped_column(nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        default=datetime.now()
+
+    )
 
     def __repr__(self):
         return f"{self.id}_{self.customer_name.split()[0]}"

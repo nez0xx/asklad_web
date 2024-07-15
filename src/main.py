@@ -8,6 +8,7 @@ from src.api_v1.subscriptions import router as subscriptions_router
 from src.api_v1.auth import router as auth_router
 from src.api_v1.warehouses import router as warehouses_router, invite_router
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from src.core.database import db_helper
@@ -29,6 +30,22 @@ app.include_router(products_router)
 app.include_router(warehouses_router)
 app.include_router(invite_router)
 app.include_router(subscriptions_router)
+
+
+origins = [
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5173"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 
 if __name__ == "__main__":
