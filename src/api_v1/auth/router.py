@@ -62,6 +62,19 @@ async def get_me(user: User = Depends(get_current_user)):
     return user
 
 
+@router.post("/change_name")
+async def change_name(
+        new_name: str,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+        user: User = Depends(get_current_user)
+):
+    await service.change_name_service(
+        session=session,
+        user=user,
+        new_name=new_name
+    )
+
+
 @router.post('/change_password')
 async def change_password(
         password: str,

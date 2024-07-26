@@ -1,0 +1,58 @@
+table {
+   border-collapse: collapse;
+   /*убираем пустые промежутки между ячейками*/
+   border: 1px solid grey;
+   /*устанавливаем для таблицы внешнюю границу серого цвета толщиной 1px*/
+   width: 750px
+}
+
+td {
+   border: 1px solid grey;
+   overflow-wrap: break-word;
+  word-break: break-word;
+}
+th {
+   border: 1px solid grey;
+   overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.prodId{
+    width: 45px;
+}
+
+.amount{
+    width: 35px;
+}
+.prodName{
+    width: 300px;
+}
+.price1{
+    width: 50px;
+}
+
+.price2{
+    width: 50px;
+}
+
+.price3 {
+    width: 50px;
+}
+
+.price4{
+    width: 50px;
+}
+
+
+.userId{
+    width: 100px
+}
+.name{
+    width: 400px;
+    text-align: center;
+}
+.orderId{
+    width: 120px
+}
+
+

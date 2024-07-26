@@ -166,7 +166,7 @@ async def delete_united_order(
     return "Order had been deleted"
 
 
-@router.post(path="/blank/")
+@router.post(path="/gen_excel/")
 async def get_issue_list(
         united_order_ids: list[str],
         warehouse: Warehouse = Depends(get_warehouse_dependency),
@@ -178,6 +178,15 @@ async def get_issue_list(
         warehouse=warehouse
     )
     return FileResponse(path=filename, filename='Лист выдачи.xlsx', media_type='multipart/form-data')
+
+
+@router.post(path="/parse_pdf/")
+async def parse_pdf(
+        file: UploadFile
+):
+    filename = await service.parse_pdf_service(file)
+
+    return FileResponse(path=filename, filename=f'{file.filename}', media_type='multipart/form-data')
 
 
 

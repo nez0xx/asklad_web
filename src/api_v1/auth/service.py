@@ -134,11 +134,17 @@ async def authenticate_user(
     ):
         raise unauthed_exc
 
+    if user.is_verify is False:
+        utils.send_confirm_link(email=user_schema.email)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Подтвердите ваш аккаунт. Ссылка отправлена на ваш email."
+        )
+
     return user
 
 
-def create_confirm_email_link(token: str):
-    return f"{settings.HOST}/auth/confirm/{token}"
+
 
 
 async def register_user(session: AsyncSession, user_schema: RegisterUser):
@@ -155,21 +161,7 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
     else:
         user = await create_user(session, user_schema=user_schema)
 
-    confirm_token = src.api_v1.utils.encode_jwt(payload={"email": user_schema.email}, expire_minutes=24*60)
-
-    link = create_confirm_email_link(confirm_token)
-    print(link)
-    html = u'''\
-    <html>
-        <head></head>
-        <body>
-        <p>Verify your account --></p>
-            <a href="%s">Verify</a>
-        </body>
-    </html>
-    ''' % link
-
-    #send_message(user_schema.email, html_message=html)
+    utils.send_confirm_link(email=user_schema.email)
 
     return user
 
@@ -240,3 +232,12 @@ async def reset_password(session: AsyncSession, token: str, new_password: str):
     await deactivcate_token(session=session, token=token)
 
 
+async def change_name_service(session: AsyncSession, new_name: str, user: User):
+    if len(new_name) < 2:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Name is too short"
+        )
+    user.name = new_name
+    await session.commit()
+    await session.close()

@@ -28,7 +28,7 @@ class Settings(SettingsWithLoadEnvVars):
 
     auth_jwt: AuthJWT = AuthJWT()
 
-    db_url: str = 'postgresql+asyncpg://root:root@localhost:5432/db_api'
+    db_url: str = 'postgresql+asyncpg://root:root@localhost:5433/db_api'
     SMTP_LOGIN: str
     SMTP_PASSWORD: str
 

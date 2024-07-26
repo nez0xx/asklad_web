@@ -1,4 +1,5 @@
-from datetime import date
+import os
+from datetime import date, datetime
 from typing import Sequence
 
 import requests
@@ -11,12 +12,19 @@ from src.api_v1.orders.customers.crud import get_or_create_customer
 from src.api_v1.orders.products.crud import get_product_by_id
 from src.api_v1.orders.schemas import UnitedOrderSchema, OrderSchema, OrderTgSchema, ProductTgSchema
 from src.api_v1.orders.utils import parse_excel, create_payment_list_excel
+
 from src.api_v1.warehouses.crud import get_user_own_warehouse, get_warehouse_by_id, get_user_available_warehouse
 from src.api_v1.warehouses.utils import check_user_in_employees
+
 from src.core.database import Warehouse, User, Order, UnitedOrder
 from src.core.settings import BASE_DIR, settings
-from src.parser import parse
+
+from src.excel_parser import parse
+
+from src.pdf_parser import convert_pdf
+
 from .products.schemas import ProductSchema
+
 from .utils import normalize_phone
 
 
@@ -432,8 +440,12 @@ async def get_total_united_orders_cost(
     return data
 
 
+async def parse_pdf_service(file: UploadFile):
+    filename = await utils.save_file(file)
+    converted_file = convert_pdf(filename)
+    os.remove(filename)
 
-
+    return converted_file
 
 
 

@@ -1,13 +1,12 @@
 import os
 from datetime import datetime
 
-import httpx
 from fastapi import UploadFile, HTTPException, status
+from openpyxl.worksheet.page import PageMargins
 
-from src.api_v1.orders.schemas import UnitedOrderSchema
 from src.core.database import Order, UnitedOrder
 from src.core.settings import BASE_DIR, settings
-from src.parser import parse
+from src.excel_parser import parse
 
 import openpyxl
 from openpyxl.styles import NamedStyle, Font, Border, Side
@@ -31,7 +30,7 @@ def normalize_phone(phone: str):
     return reserve_phone
 
 
-async def parse_excel(file: UploadFile, ):
+async def save_file(file: UploadFile):
     content = await file.read()
     date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     filename = f"{date}_{file.filename}"
@@ -40,15 +39,22 @@ async def parse_excel(file: UploadFile, ):
     with open(full_filename, "wb") as f:
         f.write(content)
 
+    return full_filename
+
+
+async def parse_excel(file: UploadFile, ):
+
+    filename = await save_file(file)
+
     # json объекты
     try:
-        united_orders = parse(full_filename)
+        united_orders = parse(filename)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File parsing error: {e}"
         )
-    os.remove(full_filename)
+    os.remove(filename)
     return united_orders
 
 
@@ -64,7 +70,7 @@ async def create_payment_list_excel(united_orders: list[UnitedOrder]):
 
     # получаем лист, с которым будем работать
     sheet = wb['Первый лист']
-
+    sheet.page_margins = PageMargins(left=0, right=0, top=0, bottom=0)
 
 
     cur_row = 1
@@ -104,11 +110,11 @@ async def create_payment_list_excel(united_orders: list[UnitedOrder]):
 
     #sheet.row_dimensions[1].height = 70
 
-    sheet.column_dimensions['A'].width = 5
-    sheet.column_dimensions['B'].width = 20
-    sheet.column_dimensions['C'].width = 50
-    sheet.column_dimensions['D'].width = 16
-    sheet.column_dimensions['E'].width = 15
+    sheet.column_dimensions['A'].width = 2
+    sheet.column_dimensions['B'].width = 14
+    sheet.column_dimensions['C'].width = 40
+    sheet.column_dimensions['D'].width = 14
+    sheet.column_dimensions['E'].width = 10
     sheet.column_dimensions['F'].width = 20
 
     date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
