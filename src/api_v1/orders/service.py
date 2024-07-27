@@ -19,9 +19,9 @@ from src.api_v1.warehouses.utils import check_user_in_employees
 from src.core.database import Warehouse, User, Order, UnitedOrder
 from src.core.settings import BASE_DIR, settings
 
-from src.excel_parser import parse
-
 from src.pdf_parser import convert_pdf
+from .exceptions import OrderExists, UnitedOrderExists, WarehouseNotFound, UnitedOrderNotFound, OrderNotFound, \
+    OrderIsGivenOut, NotDelivered, AlreadyDelivered
 
 from .products.schemas import ProductSchema
 
@@ -46,10 +46,7 @@ async def add_united_order_service(
     united_order = await get_united_order_by_id(session=session, united_order_id=united_order_schema.united_order_id)
 
     if united_order:
-        raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"United order with id {united_order_schema.united_order_id} already exists"
-            )
+        raise UnitedOrderExists
 
     for order_schema in united_order_schema.orders:
 
@@ -59,10 +56,7 @@ async def add_united_order_service(
         )
 
         if order:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Order with id {order_schema.atomy_id} already exists"
-            )
+            raise OrderExists
 
     await create_united_order(
         session,
@@ -93,7 +87,7 @@ async def get_order_service(
         session: AsyncSession,
         employee_id: int,
         order_id: str
-):
+) -> OrderSchema | None:
     order = await crud.get_order_by_id(
         session=session,
         order_id=order_id
@@ -139,14 +133,12 @@ async def get_all_orders_service(
         employee_id: int,
         is_given_out: bool | None,
         search_string: str | None = None,
-):
+) -> list[Order]:
     warehouse = await get_user_available_warehouse(session, employee_id)
 
     if warehouse is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="You dont manage any warehouse"
-        )
+        raise WarehouseNotFound
+
     orders = await crud.get_all_orders(
             session=session,
             warehouse_id=warehouse.id,
@@ -161,14 +153,11 @@ async def get_united_order_service(
         session: AsyncSession,
         order_id: str,
         employee_id: int
-):
+) -> UnitedOrder:
     order = await get_united_order_by_id(session, order_id)
     if order is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"United order with id {order_id} does not exist"
-        )
-    
+        raise UnitedOrderNotFound
+
     await check_user_in_employees(session, employee_id, order.warehouse_id)
     return order
 
@@ -189,22 +178,16 @@ async def give_order_out_service(
         order_id: str,
         employee_id: int,
         comment: str | None
-):
+) -> Order:
     order = await crud.get_order_by_id(
         session=session,
         order_id=order_id
     )
     if order is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Order with id {order_id} does not exist"
-        )
+        raise OrderNotFound
 
     if order.is_given_out:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Заказ уже выдан"
-        )
+        raise OrderIsGivenOut
 
     united_order = await get_united_order_by_id(
         session=session,
@@ -212,10 +195,8 @@ async def give_order_out_service(
     )
 
     if not united_order.delivered:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"United order with id {united_order.id} has not been delivered"
-        )
+        raise NotDelivered
+
     warehouse_id = order.warehouse_id
 
     await check_user_in_employees(
@@ -232,14 +213,17 @@ async def give_order_out_service(
     )
 
     if order is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Order does not exist"
-        )
+        raise OrderNotFound
 
     return order
 
-async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee_id: int, warehouse_id: int):
+
+async def add_orders_from_file(
+        session: AsyncSession,
+        file: UploadFile,
+        employee_id: int,
+        warehouse_id: int
+) -> list[str]:
 
     united_orders = await parse_excel(file)
     united_orders_ids = []
@@ -250,13 +234,9 @@ async def add_orders_from_file(session: AsyncSession, file: UploadFile, employee
         united_order = await crud.get_united_order_by_id(session, united_order_id)
 
         if united_order:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Order with id {united_order_id} already exists"
-            )
+            raise OrderExists
 
     for united_order in united_orders:
-        print(united_order)
         united_order["warehouse_id"] = warehouse_id
         schema = UnitedOrderSchema(**united_order)
         united_order_id = await add_united_order_service(session, schema, employee_id=employee_id)
@@ -314,16 +294,10 @@ async def delivery_united_order_service(
         united_order_id=united_order_id
     )
     if united_order is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"United order with id {united_order_id} does not exist"
-        )
+        raise UnitedOrderNotFound
     # если заказ уже доставлен и юзеров уведомили, кидаем ошибку
     if united_order.delivered:
-        raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail=f"Order {united_order.id} already has been delivered"
-        )
+        raise AlreadyDelivered
 
     warehouse = await get_warehouse_by_id(
         session=session,
@@ -367,10 +341,7 @@ async def delete_united_order(
     )
 
     if united_order is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="United order does not exist"
-        )
+        raise OrderNotFound
 
     await crud.delete_united_order(
         session=session,
@@ -389,18 +360,11 @@ async def create_issue_list(
         united_order = await get_united_order_by_id(session=session, united_order_id=united_order_id)
 
         if united_order is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"United order {united_order_id} does not exist"
-            )
-
+            raise UnitedOrderNotFound
         if united_order.warehouse_id != warehouse.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="The united order belongs to another warehouse"
-            )
+            raise UnitedOrderNotFound
+
         united_orders.append(united_order)
-        orders = united_order.orders_relationship
     filename = await create_payment_list_excel(united_orders)
     return filename
 
@@ -423,14 +387,11 @@ async def get_total_united_orders_cost(
         date_min=date_min,
         date_max=date_max
     )
-    print(united_orders, "united")
     for united_order in united_orders:
         united_order_cost = await crud.get_united_order_price(
             session=session,
             united_order=united_order
         )
-        print(united_order)
-        print(united_order_cost)
         total_sum += united_order_cost
         data["orders"][united_order.id] = {}
         data["orders"][united_order.id]["rub"] = united_order_cost

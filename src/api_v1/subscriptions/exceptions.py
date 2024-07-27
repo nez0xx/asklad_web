@@ -1,4 +1,4 @@
-from src.api_v1.exceptions import PermissionDenied
+from src.exceptions import PermissionDenied
 
 
 class SubscriptionNotAvailable(PermissionDenied):

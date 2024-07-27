@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .crud import get_user_available_warehouse, get_user_own_warehouse
 from src.api_v1.auth.dependencies import get_current_user
-from src.api_v1.exceptions import WarehouseDoesNotExist, PermissionDenied
+from src.exceptions import WarehouseDoesNotExist, PermissionDenied
 from src.core.database import db_helper, User
 
 

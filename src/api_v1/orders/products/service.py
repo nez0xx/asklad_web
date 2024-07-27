@@ -1,11 +1,9 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api_v1.exceptions import WarehouseDoesNotExist
+from src.exceptions import WarehouseDoesNotExist
 from src.api_v1.orders.products import crud
-from src.api_v1.orders.products.schemas import ProductUpdateSchema, ProductInWarehouseSchema
-from src.api_v1.warehouses.crud import get_user_available_warehouse
-from src.api_v1.warehouses.utils import check_user_in_employees
+from src.api_v1.orders.products.schemas import ProductInWarehouseSchema
 from src.core.database import Warehouse
 
 exc404 = HTTPException(

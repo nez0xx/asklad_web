@@ -5,14 +5,12 @@ from src.api_v1.utils import encode_jwt, decode_jwt
 from src.api_v1.warehouses.schemas import WarehouseCreateSchema, WarehouseUpdateSchema
 from fastapi import HTTPException, status
 
-from src.api_v1.warehouses.utils import check_user_in_employees
 from src.core.database import Warehouse
 from src.core.database.db_model_warehouse_employee_association import WarehouseEmployeeAssociation
 
-from src.api_v1.exceptions import WarehouseDoesNotExist
+from src.exceptions import WarehouseDoesNotExist
 
 from src.core.settings import settings
-from src.smtp import send_email
 
 from sqlalchemy.exc import IntegrityError
 
