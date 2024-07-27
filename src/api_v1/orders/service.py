@@ -132,7 +132,8 @@ async def get_all_orders_service(
         session: AsyncSession,
         employee_id: int,
         is_given_out: bool | None,
-        search_string: str | None = None,
+        search_id: str | None = None,
+        search_name: str | None = None
 ) -> list[Order]:
     warehouse = await get_user_available_warehouse(session, employee_id)
 
@@ -143,7 +144,8 @@ async def get_all_orders_service(
             session=session,
             warehouse_id=warehouse.id,
             is_given_out=is_given_out,
-            search_string=search_string
+            search_id=search_id,
+            search_name=search_name
         )
 
     return orders
@@ -151,10 +153,10 @@ async def get_all_orders_service(
 
 async def get_united_order_service(
         session: AsyncSession,
-        order_id: str,
+        united_order_id: str,
         employee_id: int
 ) -> UnitedOrder:
-    order = await get_united_order_by_id(session, order_id)
+    order = await get_united_order_by_id(session, united_order_id)
     if order is None:
         raise UnitedOrderNotFound()
 

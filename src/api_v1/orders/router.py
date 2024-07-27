@@ -45,7 +45,8 @@ async def get_price(
 @router.get(path="/all")
 async def get_all_orders(
         is_given_out: bool = None,
-        search_string: str | None = None,
+        search_id: str | None = None,
+        search_name: str | None = None,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
@@ -54,7 +55,8 @@ async def get_all_orders(
         session=session,
         employee_id=user.id,
         is_given_out=is_given_out,
-        search_string=search_string
+        search_string=search_id,
+        search_name=search_name
     )
 
     return orders
@@ -73,15 +75,15 @@ async def get_all_united_orders(
     return orders
 
 
-@router.get(path="/united/{id}")
+@router.get(path="/united/{united_order_id}")
 async def get_united_order(
-    order_id: str,
+    united_order_id: str,
     session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
     user: User = Depends(get_current_user)
 ):
     order = await service.get_united_order_service(
         session=session,
-        order_id=order_id,
+        united_order_id=united_order_id,
         employee_id=user.id
     )
 

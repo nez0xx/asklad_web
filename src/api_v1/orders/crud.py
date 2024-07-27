@@ -1,13 +1,11 @@
 from datetime import date, timezone, timedelta
-from typing import Sequence
 
 from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload, joinedload
 
-from src.core.database import Order, UnitedOrder, Product
+from src.core.database import Order, UnitedOrder, Product, ProductOrderAssociation
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.database import ProductOrderAssociation
 from .schemas import OrderSchema
 from .products.crud import create_product, get_product_by_id
 from .utils import normalize_phone
@@ -102,7 +100,8 @@ async def get_all_orders(
         session: AsyncSession,
         warehouse_id: int,
         is_given_out: bool | None = None,
-        search_string: str | None = None
+        search_id: str | None = None,
+        search_name: str | None = None
 ) -> list[Order] | None:
 
     stmt = (
@@ -110,8 +109,10 @@ async def get_all_orders(
         .options(selectinload(Order.products_details), selectinload(Order.customer_relationship))
         .where(Order.warehouse_id == warehouse_id)
     )
-    if search_string:
-        stmt = stmt.where(Order.id.contains(search_string))
+    if search_id:
+        stmt = stmt.where(Order.id.contains(search_id))
+    if search_name:
+        stmt = stmt.where(Order.customer_name.contains(search_name))
     if is_given_out is not None:
         stmt = stmt.where(Order.is_given_out == is_given_out)
 
