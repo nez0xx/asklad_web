@@ -1,6 +1,7 @@
 from sqladmin import Admin
 
 from src.admin import full_admin_views_list
+from src.api_v1.auth.admin_auth import authentication_backend
 from src.api_v1.orders.products import router as products_router
 from src.api_v1.orders import router as orders_router
 # from src.api_v1.orders.customers import router as customers_router
@@ -17,7 +18,8 @@ app = FastAPI()
 
 admin = Admin(
     app=app,
-    engine=db_helper.engine
+    engine=db_helper.engine,
+    authentication_backend=authentication_backend,
 )
 
 for admin_view in full_admin_views_list:
@@ -36,7 +38,7 @@ origins = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
     "http://127.0.0.1:5173",
-    "http://127.0.0.1:5173"
+    "http://localhost:5173"
 ]
 
 app.add_middleware(
