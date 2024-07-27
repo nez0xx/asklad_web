@@ -12,6 +12,8 @@ class Product(Base):
 
     price: Mapped[int] = mapped_column(default=0)
 
+    pv: Mapped[int] = mapped_column(default=0)
+
     orders_details: Mapped[list["ProductOrderAssociation"]] = relationship(
         back_populates="product_relationship",
     )

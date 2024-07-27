@@ -9,7 +9,9 @@ class ProductAdmin(ModelView, model=Product):
         Product.id,
         Product.title,
         Product.price,
+        Product.pv,
         Product.orders_details
+
     ]
     form_excluded_columns = []
     '''

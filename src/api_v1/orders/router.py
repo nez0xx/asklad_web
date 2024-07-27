@@ -55,7 +55,7 @@ async def get_all_orders(
         session=session,
         employee_id=user.id,
         is_given_out=is_given_out,
-        search_string=search_id,
+        search_id=search_id,
         search_name=search_name
     )
 

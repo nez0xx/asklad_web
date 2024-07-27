@@ -378,10 +378,12 @@ async def get_total_united_orders_cost(
         date_max: date = date.today()
 ) -> dict:
     data = {
-        "total_sum": {},
+        "total_price": {},
+        "total_pv": 0,
         "orders": {}
     }
-    total_sum = 0
+    total_price = 0
+    total_pv = 0
 
     united_orders = await crud.get_united_orders_by_date(
         session=session,
@@ -389,16 +391,23 @@ async def get_total_united_orders_cost(
         date_min=date_min,
         date_max=date_max
     )
+    print("dadadad")
+    print(united_orders)
     for united_order in united_orders:
-        united_order_cost = await crud.get_united_order_price(
+        united_order_data = await crud.get_united_order_price(
             session=session,
             united_order=united_order
         )
-        total_sum += united_order_cost
-        data["orders"][united_order.id] = {}
-        data["orders"][united_order.id]["rub"] = united_order_cost
+        print(data, "data")
+        total_price += united_order_data["united_order_price"]
+        total_pv += united_order_data["united_order_pv"]
 
-    data["total_sum"]["rub"] = total_sum
+        data["orders"][united_order.id] = {}
+        data["orders"][united_order.id]["rub"] = united_order_data["united_order_price"]
+        data["orders"][united_order.id]["pv"] = united_order_data["united_order_pv"]
+
+    data["total_price"]["rub"] = total_price
+    data["total_pv"] = total_pv
 
     return data
 

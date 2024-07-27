@@ -202,6 +202,7 @@ async def get_united_orders_by_date(
         date_min: date,
         date_max: date
 ) -> list[UnitedOrder]:
+    print(warehouse_id, date_min, date_max)
     stmt = (select(UnitedOrder)
             .options(selectinload(UnitedOrder.orders_relationship))
             .where(UnitedOrder.warehouse_id == warehouse_id)
@@ -211,15 +212,15 @@ async def get_united_orders_by_date(
     )
     result = await session.execute(stmt)
     united_orders = list(result.scalars())
-
     return united_orders
 
 
 async def get_order_cost(
         session: AsyncSession,
         order_id: str
-) -> int:
-    total_order_sum = 0
+) -> dict:
+    order_price = 0
+    order_pv = 0
 
     order = await get_order_by_id(
         session=session,
@@ -231,19 +232,28 @@ async def get_order_cost(
             session=session,
             product_id=association.product_id
         )
-        total_order_sum += product.price*association.amount
+        order_price += product.price * association.amount
+        order_pv += product.pv * association.amount
 
-    return total_order_sum
+    return {
+        "order_price": order_price,
+        "order_pv": order_pv
+    }
 
 
 async def get_united_order_price(
         session: AsyncSession,
         united_order: UnitedOrder
-) -> int:
-    total_united_order_sum = 0
+) -> dict[str: int]:
+    united_order_price = 0
+    united_order_pv = 0
 
     for order in united_order.orders_relationship:
-        order_cost = await get_order_cost(session=session, order_id=order.id)
-        total_united_order_sum += order_cost
+        data = await get_order_cost(session=session, order_id=order.id)
+        united_order_price += data["order_price"]
+        united_order_pv += data["order_pv"]
 
-    return total_united_order_sum
+    return {
+        "united_order_price": united_order_price,
+        "united_order_pv": united_order_pv
+    }
