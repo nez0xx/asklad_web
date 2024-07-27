@@ -15,25 +15,7 @@ from src.core.settings import settings
 from sqlalchemy.exc import IntegrityError
 
 
-async def check_user_is_owner(
-        session: AsyncSession,
-        warehouse_id: int,
-        owner_id: int
-):
-    wh = await crud.get_warehouse_by_id_and_owner(session=session, warehouse_id=warehouse_id, owner_id=owner_id)
-    if wh:
-        return True
-
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="You are not owner"
-    )
-
-
-async def create_warehouse(
-        session: AsyncSession,
-        schema: WarehouseCreateSchema
-):
+async def create_warehouse(session: AsyncSession, schema: WarehouseCreateSchema) -> Warehouse:
     warehouse = await crud.get_user_available_warehouse(
         session=session,
         employee_id=schema.owner_id
@@ -53,11 +35,7 @@ async def create_warehouse(
     return warehouse
 
 
-async def send_employee_invite(
-        session: AsyncSession,
-        employee_id: int,
-        warehouse: Warehouse
-):
+async def send_employee_invite(session: AsyncSession, employee_id: int, warehouse: Warehouse):
     employee = await get_user_by_id(session, employee_id)
     if employee is None:
         raise HTTPException(
@@ -91,10 +69,7 @@ async def send_employee_invite(
     #send_message(email_to=employee.email, html_message=invite_link, subject="Invite to warehouse")
 
 
-async def confirm_employee_invite(
-        session: AsyncSession,
-        token: str
-):
+async def confirm_employee_invite(session: AsyncSession, token: str):
     data = decode_jwt(token)
 
     try:
@@ -104,17 +79,13 @@ async def confirm_employee_invite(
             warehouse_id=data["warehouse_id"]
         )
     except IntegrityError as e:
-        print(IntegrityError)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Invite has already been accepted"
         )
 
 
-async def warehouse_info(
-        session: AsyncSession,
-        employee_id: int
-):
+async def warehouse_info(session: AsyncSession, employee_id: int) -> Warehouse:
     warehouse = await crud.get_user_available_warehouse(
         session=session,
         employee_id=employee_id
@@ -124,11 +95,7 @@ async def warehouse_info(
     return warehouse
 
 
-async def delete_employee(
-        session: AsyncSession,
-        employee_id: int,
-        warehouse: Warehouse
-):
+async def delete_employee(session: AsyncSession, employee_id: int, warehouse: Warehouse):
     if warehouse is None:
         raise WarehouseDoesNotExist()
 
@@ -144,11 +111,7 @@ async def delete_employee(
     )
 
 
-async def update_warehouse(
-        session: AsyncSession,
-        warehouse: Warehouse,
-        schema: WarehouseUpdateSchema
-):
+async def update_warehouse(session: AsyncSession, warehouse: Warehouse, schema: WarehouseUpdateSchema) -> Warehouse:
     if warehouse is None:
         raise WarehouseDoesNotExist()
 
@@ -161,10 +124,7 @@ async def update_warehouse(
     return warehouse
 
 
-async def delete_warehouse(
-        session: AsyncSession,
-        warehouse: Warehouse
-):
+async def delete_warehouse(session: AsyncSession, warehouse: Warehouse):
     await crud.delete_warehouse(
         session=session,
         warehouse=warehouse

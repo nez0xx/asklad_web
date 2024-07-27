@@ -46,7 +46,7 @@ async def add_united_order_service(
     united_order = await get_united_order_by_id(session=session, united_order_id=united_order_schema.united_order_id)
 
     if united_order:
-        raise UnitedOrderExists
+        raise UnitedOrderExists()
 
     for order_schema in united_order_schema.orders:
 
@@ -56,7 +56,7 @@ async def add_united_order_service(
         )
 
         if order:
-            raise OrderExists
+            raise OrderExists()
 
     await create_united_order(
         session,
@@ -137,7 +137,7 @@ async def get_all_orders_service(
     warehouse = await get_user_available_warehouse(session, employee_id)
 
     if warehouse is None:
-        raise WarehouseNotFound
+        raise WarehouseNotFound()
 
     orders = await crud.get_all_orders(
             session=session,
@@ -156,7 +156,7 @@ async def get_united_order_service(
 ) -> UnitedOrder:
     order = await get_united_order_by_id(session, order_id)
     if order is None:
-        raise UnitedOrderNotFound
+        raise UnitedOrderNotFound()
 
     await check_user_in_employees(session, employee_id, order.warehouse_id)
     return order
@@ -184,10 +184,10 @@ async def give_order_out_service(
         order_id=order_id
     )
     if order is None:
-        raise OrderNotFound
+        raise OrderNotFound()
 
     if order.is_given_out:
-        raise OrderIsGivenOut
+        raise OrderIsGivenOut()
 
     united_order = await get_united_order_by_id(
         session=session,
@@ -195,7 +195,7 @@ async def give_order_out_service(
     )
 
     if not united_order.delivered:
-        raise NotDelivered
+        raise NotDelivered()
 
     warehouse_id = order.warehouse_id
 
@@ -213,7 +213,7 @@ async def give_order_out_service(
     )
 
     if order is None:
-        raise OrderNotFound
+        raise OrderNotFound()
 
     return order
 
@@ -234,7 +234,7 @@ async def add_orders_from_file(
         united_order = await crud.get_united_order_by_id(session, united_order_id)
 
         if united_order:
-            raise OrderExists
+            raise OrderExists()
 
     for united_order in united_orders:
         united_order["warehouse_id"] = warehouse_id
@@ -294,10 +294,10 @@ async def delivery_united_order_service(
         united_order_id=united_order_id
     )
     if united_order is None:
-        raise UnitedOrderNotFound
+        raise UnitedOrderNotFound()
     # если заказ уже доставлен и юзеров уведомили, кидаем ошибку
     if united_order.delivered:
-        raise AlreadyDelivered
+        raise AlreadyDelivered()
 
     warehouse = await get_warehouse_by_id(
         session=session,
@@ -341,7 +341,7 @@ async def delete_united_order(
     )
 
     if united_order is None:
-        raise OrderNotFound
+        raise OrderNotFound()
 
     await crud.delete_united_order(
         session=session,
@@ -360,9 +360,9 @@ async def create_issue_list(
         united_order = await get_united_order_by_id(session=session, united_order_id=united_order_id)
 
         if united_order is None:
-            raise UnitedOrderNotFound
+            raise UnitedOrderNotFound()
         if united_order.warehouse_id != warehouse.id:
-            raise UnitedOrderNotFound
+            raise UnitedOrderNotFound()
 
         united_orders.append(united_order)
     filename = await create_payment_list_excel(united_orders)

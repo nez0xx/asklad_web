@@ -10,7 +10,7 @@ from src.core.database import Warehouse, ProductOrderAssociation, Order, UnitedO
 from src.core.database.db_model_warehouse_employee_association import WarehouseEmployeeAssociation
 
 
-async def get_employees(session: AsyncSession, warehouse_id: int):
+async def get_employees(session: AsyncSession, warehouse_id: int) -> list[WarehouseEmployeeAssociation]:
     stmt = (select(WarehouseEmployeeAssociation)
             .options(selectinload(WarehouseEmployeeAssociation.employee_relationship))
             .where(WarehouseEmployeeAssociation.warehouse_id == warehouse_id))
@@ -19,7 +19,11 @@ async def get_employees(session: AsyncSession, warehouse_id: int):
     return [elem for elem in employees_details]
 
 
-async def get_warehouse_employee_association(session: AsyncSession, employee_id: int, warehouse_id: int):
+async def get_warehouse_employee_association(
+        session: AsyncSession,
+        employee_id: int,
+        warehouse_id: int
+) -> WarehouseEmployeeAssociation:
     stmt = (select(WarehouseEmployeeAssociation)
             .where(WarehouseEmployeeAssociation.warehouse_id == warehouse_id)
             .where(WarehouseEmployeeAssociation.user_id == employee_id))
@@ -28,7 +32,7 @@ async def get_warehouse_employee_association(session: AsyncSession, employee_id:
     return employee_details
 
 
-async def get_warehouse_by_name_and_owner(session: AsyncSession, name: str, owner_id: int):
+async def get_warehouse_by_name_and_owner(session: AsyncSession, name: str, owner_id: int) -> Warehouse:
     stmt = (select(Warehouse)
             .where(Warehouse.owner_id == owner_id)
             .where(Warehouse.name == name))
@@ -37,7 +41,7 @@ async def get_warehouse_by_name_and_owner(session: AsyncSession, name: str, owne
     return warehouse
 
 
-async def get_warehouse_by_id_and_owner(session: AsyncSession, warehouse_id: int, owner_id: int):
+async def get_warehouse_by_id_and_owner(session: AsyncSession, warehouse_id: int, owner_id: int) -> Warehouse:
     stmt = (select(Warehouse)
             .where(Warehouse.owner_id == owner_id)
             .where(Warehouse.id == warehouse_id))
@@ -46,7 +50,7 @@ async def get_warehouse_by_id_and_owner(session: AsyncSession, warehouse_id: int
     return warehouse
 
 
-async def get_warehouse_by_id(session: AsyncSession, warehouse_id: int):
+async def get_warehouse_by_id(session: AsyncSession, warehouse_id: int) -> Warehouse:
     stmt = (select(Warehouse)
             .options(selectinload(Warehouse.employees_details))
             .options(selectinload(Warehouse.orders_relationship))
@@ -58,7 +62,7 @@ async def get_warehouse_by_id(session: AsyncSession, warehouse_id: int):
     return warehouse
 
 
-async def create_warehouse(session: AsyncSession, schema: WarehouseCreateSchema):
+async def create_warehouse(session: AsyncSession, schema: WarehouseCreateSchema) -> Warehouse:
     warehouse = Warehouse(**schema.model_dump())
     session.add(warehouse)
     await session.commit()
@@ -79,10 +83,9 @@ async def delete_employee(session: AsyncSession, employee_id: int, warehouse_id:
             .where(WarehouseEmployeeAssociation.warehouse_id == warehouse_id))
     result = await session.execute(stmt)
     await session.commit()
-    return result
 
 
-async def get_user_own_warehouse(session: AsyncSession, owner_id: int):
+async def get_user_own_warehouse(session: AsyncSession, owner_id: int) -> Warehouse:
     stmt = select(Warehouse).where(Warehouse.owner_id == owner_id)
     result = await session.execute(stmt)
     warehouse = result.scalar_one_or_none()
@@ -107,9 +110,9 @@ async def get_user_available_warehouse(session: AsyncSession, employee_id: int) 
 
 
 async def update_warehouse(
-    session: AsyncSession,
-    warehouse: Warehouse,
-    warehouse_update: WarehouseUpdateSchema
+        session: AsyncSession,
+        warehouse: Warehouse,
+        warehouse_update: WarehouseUpdateSchema
 ) -> Warehouse:
     for name, value in warehouse_update.model_dump(exclude_unset=True).items():
         setattr(warehouse, name, value)
@@ -117,10 +120,7 @@ async def update_warehouse(
     return warehouse
 
 
-async def delete_warehouse(
-    session: AsyncSession,
-    warehouse: Warehouse
-):
+async def delete_warehouse(session: AsyncSession, warehouse: Warehouse):
     from src.api_v1.orders.crud import get_united_orders, delete_united_order
 
     united_orders = await get_united_orders(

@@ -34,7 +34,7 @@ async def create_subscription_in_db(
         # price: int,
         # tariff_id: str,
         started_at: datetime | None = None
-):
+) -> Subscription:
     new_sub = Subscription(
         user_id=user_id,
         expired_at=expired_at
