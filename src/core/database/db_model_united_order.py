@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from sqlalchemy import func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
@@ -35,8 +35,10 @@ class UnitedOrder(Base):
 
     delivered: Mapped[bool] = mapped_column(default=False)
 
-    created_at: Mapped[date] = mapped_column(default=date.today())
-
+    created_at: Mapped[datetime] = mapped_column(
+        default=datetime.now()
+    )
+    
     def __repr__(self):
         return f"{self.id}"
 
