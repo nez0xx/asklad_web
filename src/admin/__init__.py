@@ -11,6 +11,7 @@ from .united_orders_admin import UnitedOrderAdmin
 from .warehouse_employee_association_admin import WarehouseEmployeeAssociationAdmin
 from .order_product_association_admin import ProductOrderAssociationAdmin
 from .tariffs_admin import TariffAdmin
+from .reset_tokens_admin import ResetTokenAdmin
 
 full_admin_views_list = [
     UserAdmin,
@@ -21,5 +22,6 @@ full_admin_views_list = [
     UnitedOrderAdmin,
     WarehouseEmployeeAssociationAdmin,
     ProductOrderAssociationAdmin,
-    TariffAdmin
+    TariffAdmin,
+    ResetTokenAdmin
 ]

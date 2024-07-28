@@ -35,6 +35,8 @@ class UnitedOrder(Base):
 
     delivered: Mapped[bool] = mapped_column(default=False)
 
+    created_at: Mapped[date] = mapped_column(default=date.today())
+
     def __repr__(self):
         return f"{self.id}"
 

@@ -88,7 +88,8 @@ async def create_order(
 async def get_united_orders(session: AsyncSession, warehouse_id: int) -> list[UnitedOrder]:
     stmt = (select(UnitedOrder)
             .options(selectinload(UnitedOrder.employee_relationship))
-            .where(UnitedOrder.warehouse_id == warehouse_id))
+            .where(UnitedOrder.warehouse_id == warehouse_id)
+            .order_by(UnitedOrder.created_at))
 
     result = await session.execute(stmt)
     orders = list(result.scalars())
