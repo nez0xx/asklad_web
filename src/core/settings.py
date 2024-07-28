@@ -31,6 +31,8 @@ class Settings(SettingsWithLoadEnvVars):
     db_url: str = 'postgresql+asyncpg://root:root@localhost:5433/db_api'
     SMTP_LOGIN: str
     SMTP_PASSWORD: str
+    SMTP_HOST: str
+    SMTP_PORT: str
 
     HOST: str
     NOTIFICATION_BOT_URL: str

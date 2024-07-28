@@ -18,15 +18,16 @@ def send_confirm_link(email: str):
 
     link = create_confirm_email_link(confirm_token)
     print(link)
-    html = u'''\
+    html = u'''
         <html>
             <head></head>
             <body>
             <p>Verify your account --></p>
                 <a href="%s">Verify</a>
+                %s
             </body>
         </html>
-        ''' % link
+        ''' % (link, link)
 
     send_email(email, html_message=html)
 
