@@ -35,17 +35,3 @@ async def check_user_in_employees(
 
     return association is not None
 
-'''
-def employees_only(func):
-    async def _wrapper(session: AsyncSession, employee_id: int, warehouse_id: int, *args, **kwargs):
-        await check_user_in_employees(
-            session=session,
-            employee_id=employee_id,
-            warehouse_id=warehouse_id
-        )
-
-        return await func(session=session, employee_id=employee_id, warehouse_id=warehouse_id, *args, **kwargs)
-
-    return _wrapper
-    '''
-

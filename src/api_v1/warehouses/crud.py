@@ -89,7 +89,6 @@ async def get_user_own_warehouse(session: AsyncSession, owner_id: int) -> Wareho
     stmt = select(Warehouse).where(Warehouse.owner_id == owner_id)
     result = await session.execute(stmt)
     warehouse = result.scalar_one_or_none()
-    print(warehouse)
     return warehouse
 
 

@@ -87,13 +87,13 @@ async def create_warehouse_view(
     path="/employee"
 )
 async def add_employee_view(
-        employee_id: int,
+        employee_email: str,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         warehouse: Warehouse = Depends(get_own_warehouse_dependency)
 ):
     await service.send_employee_invite(
         session=session,
-        employee_id=employee_id,
+        employee_email=employee_email,
         warehouse=warehouse
     )
 

@@ -29,8 +29,7 @@ async def get_own_warehouse_dependency(
         owner_id=user.id
     )
     if warehouse is None:
-        raise PermissionDenied()
-    print(warehouse)
+        raise WarehouseDoesNotExist()
     return warehouse
 
 

@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.warehouses import crud
-from src.api_v1.auth.crud import get_user_by_id
+from src.api_v1.auth.crud import get_user_by_id, get_user_by_email
 from src.api_v1.utils import encode_jwt, decode_jwt
 from src.api_v1.warehouses.schemas import WarehouseCreateSchema, WarehouseUpdateSchema
 from fastapi import HTTPException, status
@@ -14,13 +14,14 @@ from src.core.settings import settings
 
 from sqlalchemy.exc import IntegrityError
 
+from src.smtp import send_email
+
 
 async def create_warehouse(session: AsyncSession, schema: WarehouseCreateSchema) -> Warehouse:
     warehouse = await crud.get_user_available_warehouse(
         session=session,
         employee_id=schema.owner_id
     )
-    print(warehouse)
     if warehouse:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -35,12 +36,12 @@ async def create_warehouse(session: AsyncSession, schema: WarehouseCreateSchema)
     return warehouse
 
 
-async def send_employee_invite(session: AsyncSession, employee_id: int, warehouse: Warehouse):
-    employee = await get_user_by_id(session, employee_id)
+async def send_employee_invite(session: AsyncSession, employee_email: str, warehouse: Warehouse):
+    employee = await get_user_by_email(session, employee_email)
     if employee is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {employee_id} doesn't exist"
+            detail=f"User with id {employee_email} doesn't exist"
         )
 
     if warehouse is None:
@@ -48,25 +49,25 @@ async def send_employee_invite(session: AsyncSession, employee_id: int, warehous
 
     employee_own_warehouse = await crud.get_user_available_warehouse(
         session=session,
-        employee_id=employee_id
+        employee_id=employee.id
     )
 
     if employee_own_warehouse:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"User with id {employee_id} already manage warehouse"
+            detail=f"User with id {employee.id} already manage warehouse"
         )
 
     token = encode_jwt(
         payload={
-            "employee_id": employee_id,
+            "employee_id": employee.id,
             "warehouse_id": warehouse.id
         },
         expire_minutes=60*24*3
     )
     invite_link = f"http://{settings.HOST}/invite/{token}"
     print(invite_link)
-    #send_message(email_to=employee.email, html_message=invite_link, subject="Invite to warehouse")
+    send_email(email_to=employee.email, html_message=invite_link, subject="Invite to warehouse")
 
 
 async def confirm_employee_invite(session: AsyncSession, token: str):

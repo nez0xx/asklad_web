@@ -2,6 +2,7 @@ import uuid
 
 from src.api_v1.utils import encode_jwt
 from src.core import settings
+from src.smtp import send_email
 
 
 def generate_id() -> str:
@@ -9,7 +10,7 @@ def generate_id() -> str:
 
 
 def create_confirm_email_link(token: str):
-    return f"{settings.HOST}/auth/confirm/{token}"
+    return f"{settings.HOST}/#/confirm_email/{token}"
 
 
 def send_confirm_link(email: str):
@@ -27,6 +28,6 @@ def send_confirm_link(email: str):
         </html>
         ''' % link
 
-    # send_message(email, html_message=html)
+    send_email(email, html_message=html)
 
 

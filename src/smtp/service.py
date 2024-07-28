@@ -7,8 +7,8 @@ from src.core import settings
 
 smtp_server = "smtp.mail.ru"
 port = 25 # For starttls
-# sender_email = settings.SMTP_LOGIN
-# password = settings.SMTP_PASSWORD
+sender_email = settings.SMTP_LOGIN
+password = settings.SMTP_PASSWORD
 
 
 def send_email(email_to: str, html_message: str, subject: str = "A-Склад"):
@@ -19,20 +19,18 @@ def send_email(email_to: str, html_message: str, subject: str = "A-Склад"):
 
     message = MIMEMultipart("alternative")
     message["Subject"] = subject
-    #message["From"] = settings.SMTP_LOGIN
-    #message["To"] = email_to
+    message["From"] = settings.SMTP_LOGIN
+    message["To"] = email_to
     message.attach(MIMEText(html_message, "html"))  # Пишем HTML-код здесь
 
     try:
 
         server.starttls(context=context)
-        #server.login(sender_email, password)
-        #server.sendmail(sender_email, email_to, message.as_string())
-        print("OK"*100)
-
+        server.login(sender_email, password)
+        server.sendmail(sender_email, email_to, message.as_string())
+        print("се круто"*100)
     except Exception as e:
-        print("-"*100)
-        print(e, "_"*100)
+        print(e)
 
     finally:
         server.quit()
