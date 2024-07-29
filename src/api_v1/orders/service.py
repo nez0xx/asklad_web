@@ -108,6 +108,7 @@ async def get_order_service(
         customer_name=order.customer_name,
         customer_id=order.customer_id,
         customer_phone=order.customer_phone,
+        comment=order.comment,
         products=[]
     )
 

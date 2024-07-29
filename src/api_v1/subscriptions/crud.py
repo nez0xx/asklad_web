@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.database import Subscription
+from src.core.database import Subscription, Tariff
 
 
 async def get_active_subscription_by_user_id(
@@ -32,7 +32,6 @@ async def create_subscription_in_db(
         expired_at: datetime,
         user_id: int,
         # price: int,
-        tariff_id: int,
         started_at: datetime | None = None
 ) -> Subscription:
     now = datetime.now(tz=None) + timedelta(hours=3)
@@ -49,3 +48,17 @@ async def create_subscription_in_db(
     await session.commit()
 
     return new_sub
+
+
+async def get_tariff_by_id(session: AsyncSession, tariff_id: int):
+    stmt = select(Tariff).where(Tariff.id == tariff_id)
+    result = await session.execute(stmt)
+    tariff = result.scalar_one_or_none()
+    return tariff
+
+
+async def get_all_tariffs(session: AsyncSession):
+    stmt = select(Tariff)
+    result = await session.execute(stmt)
+    tariffs = result.scalars().all()
+    return tariffs

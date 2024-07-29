@@ -16,6 +16,8 @@ class OrderSchema(BaseModel):
 
     given_by: str | None = None
 
+    comment: str | None = None
+
     products: list[ProductSchema]
 
 
