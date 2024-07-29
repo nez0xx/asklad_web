@@ -315,7 +315,7 @@ async def delivery_united_order_service(
     )
 
     # изменить схемы!!
-    '''
+
     status_code = await notify_customers(
         session=session, 
         united_order_id=united_order_id, 
@@ -325,7 +325,8 @@ async def delivery_united_order_service(
     if status_code == 200:
         await crud.delivery_united_order(
             session=session,
-            united_order=united_order
+            united_order=united_order,
+            employee_id=user.id
         )
     '''
     await crud.delivery_united_order(
@@ -333,7 +334,7 @@ async def delivery_united_order_service(
         united_order=united_order,
         employee_id=user.id
     )
-
+    '''
 
 async def delete_united_order(
         session: AsyncSession,

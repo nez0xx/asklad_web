@@ -9,7 +9,7 @@ from src.core.database import Base
 from src.core.database.db_model_warehouse_employee_association import WarehouseEmployeeAssociation
 
 if TYPE_CHECKING:
-    from src.core.database import Subscription, UnitedOrder, Order
+    from src.core.database import Subscription, UnitedOrder, Order, Payment, EmailConfirmToken
 
 
 class User(Base):
@@ -44,6 +44,10 @@ class User(Base):
     united_orders_relationship: Mapped[list["UnitedOrder"]] = relationship(back_populates="employee_relationship")
 
     orders_relationship: Mapped[list["Order"]] = relationship(back_populates="given_by_relationship")
+
+    payments_relationship: Mapped[list["Payment"]] = relationship(back_populates="user_relationship")
+
+    email_confirm_token: Mapped["EmailConfirmToken"] = relationship(back_populates="user_relationship")
 
     def __repr__(self):
         return f"{self.name} {self.email}"

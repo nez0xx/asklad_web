@@ -116,8 +116,10 @@ async def get_all_orders(
         .where(Order.warehouse_id == warehouse_id)
     )
     if search_id:
+        search_id = search_id.lower()
         stmt = stmt.where(Order.id.contains(search_id))
     if search_name:
+        search_name = search_name.lower()
         stmt = stmt.where(Order.customer_name.contains(search_name))
     if is_given_out is not None:
         stmt = stmt.where(Order.is_given_out == is_given_out)

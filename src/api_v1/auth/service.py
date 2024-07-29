@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.api_v1.utils
 from src.api_v1.auth.crud import get_user_by_email, create_reset_token, create_user, set_password, get_reset_token, \
-    get_user_by_id, deactivcate_token, get_active_reset_token_by_user_id
+    get_user_by_id, delete_reset_token, get_active_reset_token_by_user_id, get_email_confirm_token, \
+    delete_email_confirm_token
 
 from src.api_v1.auth import crud, utils
 from src.api_v1.auth.schemas import AuthUser, RegisterUser
@@ -15,6 +16,7 @@ from src.api_v1.auth.security import check_password, hash_password
 from src.api_v1.auth.utils import generate_id
 from src.core.database import User, db_helper, ResetToken
 from src.core.settings import settings
+from src.exceptions import NotFound
 from src.smtp import send_email
 
 TOKEN_TYPE_FIELD = "type"
@@ -150,32 +152,26 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
         email=user_schema.email
     )
     if user:
-        if user.is_verify:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Пользователь с таким email уже существует")
-        else:
-            # если юзер зарегался, но не подтвердил емеил, так и быть, даём ему второй шанс
-            await set_password(session=session, user_id=user.id, password=user_schema.password)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Пользователь с таким email уже существует")
+
     else:
         user = await create_user(session, user_schema=user_schema)
 
-    utils.send_confirm_link(email=user_schema.email)
+    await utils.send_confirm_link(session=session, email=user_schema.email, user_id=user.id)
 
     return user
 
 
 async def confirm_email(session: AsyncSession, token: str):
 
-    payload = src.api_v1.utils.decode_jwt(token)
+    token_model = await get_email_confirm_token(session=session, token=token)
+    if token_model is None:
+        raise NotFound()
 
-    user = await get_user_by_email(
-        session=session,
-        email=payload["email"]
-    )
+    user = token_model.user_relationship
     user.is_verify = True
-
+    await delete_email_confirm_token(session=session, token=token)
     await session.commit()
-
-    return "success"
 
 
 async def change_password(
@@ -242,7 +238,7 @@ async def reset_password_request(
 
 async def reset_password(session: AsyncSession, token: str, new_password: str):
     token_model = await get_reset_token(session=session, token=token)
-    if token is None:
+    if token_model is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Token does not exist"
@@ -251,7 +247,7 @@ async def reset_password(session: AsyncSession, token: str, new_password: str):
     user = await get_user_by_id(session=session, user_id=token_model.user_id)
 
     await set_password(session=session, user_id=user.id, password=new_password)
-    await deactivcate_token(session=session, token=token)
+    await delete_reset_token(session=session, token=token)
 
 
 async def change_name_service(session: AsyncSession, new_name: str, user: User):

@@ -1,10 +1,12 @@
-from sqlalchemy import select
+import uuid
+
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from src.api_v1.auth.schemas import RegisterUser
 from src.api_v1.auth.security import hash_password
-from src.api_v1.auth.utils import generate_id
-from src.core.database import User
+from src.core.database import User, EmailConfirmToken
 from src.core.database.db_model_reset_token import ResetToken
 
 from datetime import datetime, timezone, timedelta
@@ -44,8 +46,34 @@ async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
     return user
 
 
+async def create_email_confirm_token(session: AsyncSession, user_id: int) -> str:
+    token = uuid.uuid4().hex
+    now = datetime.now() + timedelta(hours=3)#мск время
+    token_model = EmailConfirmToken(token=token, user_id=user_id, created_at=now)
+    session.add(token_model)
+    await session.commit()
+    await session.close()
+    return token
+
+
+async def get_email_confirm_token(session: AsyncSession, token: str) -> EmailConfirmToken | None:
+    stmt = (select(EmailConfirmToken)
+            .options(joinedload(EmailConfirmToken.user_relationship))
+            .where(EmailConfirmToken.token == token))
+    result = await session.execute(stmt)
+    token_model = result.scalar_one_or_none()
+    return token_model
+
+
+async def delete_email_confirm_token(session: AsyncSession, token: str):
+    stmt = (delete(EmailConfirmToken)
+            .where(EmailConfirmToken.token == token))
+    await session.execute(stmt)
+    await session.commit()
+
+
 async def create_reset_token(session: AsyncSession, user_id: int) -> str:
-    token = generate_id()
+    token = uuid.uuid4().hex
     expired_at = datetime.now() + timedelta(minutes=10) + timedelta(hours=3)#мск время
     token_model = ResetToken(token=token, user_id=user_id, expired_at=expired_at)
     session.add(token_model)
@@ -74,10 +102,9 @@ async def get_active_reset_token_by_user_id(session: AsyncSession, user_id: int)
     return token_model
 
 
-async def deactivcate_token(session: AsyncSession, token: str):
-    token_model = await get_reset_token(session=session, token=token)
-    now = datetime.now() + timedelta(hours=3)
-    token_model.expired_at = now
+async def delete_reset_token(session: AsyncSession, token: str):
+    stmt = delete(ResetToken).where(ResetToken.token == token)
+    await session.execute(stmt)
     await session.commit()
 
 

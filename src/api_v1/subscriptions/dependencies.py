@@ -15,12 +15,10 @@ async def check_active_subscription_depends(
 ) -> Subscription | None:
 
     owner_id = warehouse.owner_id
-    print(owner_id)
     subscription_model = await crud.get_active_subscription_by_user_id(
         user_id=owner_id,
         session=session
     )
-    print(subscription_model)
     if subscription_model is None:
         raise SubscriptionNotAvailable()
 

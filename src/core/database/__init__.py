@@ -11,7 +11,9 @@ __all__ = (
     'ProductOrderAssociation',
     'ResetToken',
     'WarehouseEmployeeAssociation',
-    'Tariff'
+    'Tariff',
+    'Payment',
+    'EmailConfirmToken'
 )
 
 from .db_helper import db_helper
@@ -27,3 +29,5 @@ from .db_model_subscription import Subscription
 from .db_model_reset_token import ResetToken
 from .db_model_warehouse_employee_association import WarehouseEmployeeAssociation
 from .db_model_tariff import Tariff
+from .db_model_payment import Payment
+from .db_model_email_confirm import EmailConfirmToken

@@ -1,5 +1,8 @@
 import uuid
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api_v1.auth.crud import create_email_confirm_token
 from src.api_v1.utils import encode_jwt
 from src.core import settings
 from src.smtp import send_email
@@ -13,11 +16,10 @@ def create_confirm_email_link(token: str):
     return f"{settings.HOST}/#/confirm_email/{token}"
 
 
-def send_confirm_link(email: str):
-    confirm_token = encode_jwt(payload={"email": email}, expire_minutes=24 * 60)
+async def send_confirm_link(session: AsyncSession, email: str, user_id):
+    confirm_token = await create_email_confirm_token(session=session, user_id=user_id)
 
     link = create_confirm_email_link(confirm_token)
-    print(link)
     html = u'''
         <html>
             <head></head>

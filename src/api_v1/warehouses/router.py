@@ -40,7 +40,7 @@ async def get_user_available_warehouse_view(
     session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
     warehouse: Warehouse = Depends(get_warehouse_dependency)
 ):
-    # не убирать(!)
+    # НЕ УБИРАТЬ НИ В КОЕМ СЛУЧАЕ(!)
     employees = await get_employees(session=session, warehouse_id=warehouse.id)
 
     data = {"warehouse": warehouse}
