@@ -137,7 +137,7 @@ async def authenticate_user(
         raise unauthed_exc
 
     if user.is_verify is False:
-        utils.send_confirm_link(email=user_schema.email)
+        await utils.send_confirm_link(session=session, email=user_schema.email, user_id=user.id)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Подтвердите ваш аккаунт. Ссылка отправлена на ваш email."
