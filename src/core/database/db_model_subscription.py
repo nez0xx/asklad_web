@@ -45,7 +45,7 @@ class Subscription(Base):
 
 
     def __str__(self):
-        return f"{self.__class__.__name__} | {self.user}"
+        return f"{self.__class__.__name__} | {self.user_id}"
 
     def __repr__(self):
         return str(self)

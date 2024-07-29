@@ -46,7 +46,7 @@ async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
 
 async def create_reset_token(session: AsyncSession, user_id: int) -> str:
     token = generate_id()
-    expired_at = datetime.now(tz=timezone(offset=timedelta(hours=5))) + timedelta(hours=1)
+    expired_at = datetime.now() + timedelta(minutes=10) + timedelta(hours=3)#мск время
     token_model = ResetToken(token=token, user_id=user_id, expired_at=expired_at)
     session.add(token_model)
     await session.commit()
@@ -55,7 +55,7 @@ async def create_reset_token(session: AsyncSession, user_id: int) -> str:
 
 
 async def get_reset_token(session: AsyncSession, token: str) -> ResetToken | None:
-    now = datetime.now(tz=timezone(offset=timedelta(hours=5)))
+    now = datetime.now() + timedelta(hours=3)
     stmt = (select(ResetToken)
             .where(ResetToken.token == token)
             .where(ResetToken.expired_at > now))
@@ -64,9 +64,19 @@ async def get_reset_token(session: AsyncSession, token: str) -> ResetToken | Non
     return token_model
 
 
+async def get_active_reset_token_by_user_id(session: AsyncSession, user_id: int) -> ResetToken | None:
+    now = datetime.now() + timedelta(hours=3)
+    stmt = (select(ResetToken)
+            .where(ResetToken.user_id == user_id)
+            .where(ResetToken.expired_at > now))
+    result = await session.execute(stmt)
+    token_model = result.scalar_one_or_none()
+    return token_model
+
+
 async def deactivcate_token(session: AsyncSession, token: str):
     token_model = await get_reset_token(session=session, token=token)
-    now = datetime.now(tz=timezone(offset=timedelta(hours=5)))
+    now = datetime.now() + timedelta(hours=3)
     token_model.expired_at = now
     await session.commit()
 

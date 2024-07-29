@@ -7,13 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.api_v1.utils
 from src.api_v1.auth.crud import get_user_by_email, create_reset_token, create_user, set_password, get_reset_token, \
-    get_user_by_id, deactivcate_token
+    get_user_by_id, deactivcate_token, get_active_reset_token_by_user_id
 
 from src.api_v1.auth import crud, utils
 from src.api_v1.auth.schemas import AuthUser, RegisterUser
 from src.api_v1.auth.security import check_password, hash_password
 from src.api_v1.auth.utils import generate_id
-from src.core.database import User, db_helper
+from src.core.database import User, db_helper, ResetToken
 from src.core.settings import settings
 from src.smtp import send_email
 
@@ -117,7 +117,7 @@ async def authenticate_user(
 
     unauthed_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="invalid username or password",
+        detail="Неправильный логин или пароль",
     )
 
     user = await get_user_by_email(
@@ -144,9 +144,6 @@ async def authenticate_user(
     return user
 
 
-
-
-
 async def register_user(session: AsyncSession, user_schema: RegisterUser):
     user = await get_user_by_email(
         session=session,
@@ -154,7 +151,7 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
     )
     if user:
         if user.is_verify:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exists")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Пользователь с таким email уже существует")
         else:
             # если юзер зарегался, но не подтвердил емеил, так и быть, даём ему второй шанс
             await set_password(session=session, user_id=user.id, password=user_schema.password)
@@ -190,7 +187,7 @@ async def change_password(
     if not check_password(password=password, hashed_password=user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid password"
+            detail="Неправильный пароль"
         )
     #if len(new_password) < 8:
         #raise HTTPException(
@@ -200,22 +197,47 @@ async def change_password(
     await set_password(session=session, user_id=user.id, password=new_password)
 
 
+async def get_active_reset_token(session: AsyncSession, user_id: int) -> ResetToken | None:
+    token_model = await get_active_reset_token_by_user_id(session=session, user_id=user_id)
+    return token_model
+
+
+async def reset_token_exists(session: AsyncSession, token: str):
+    token_model = await get_reset_token(session=session, token=token)
+    return token_model != None
+
+
 async def reset_password_request(
         session: AsyncSession,
         user_email: str
 ):
     user = await get_user_by_email(session=session, email=user_email)
     if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пользователя не существует")
+
+    existing_token = await get_active_reset_token(session=session, user_id=user.id)
+
+    if existing_token:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Запрос на сброс пароля уже сделан. Повторите попытку через 10 минут"
+        )
 
     token = await create_reset_token(session=session, user_id=user.id)
-    send_email(email_to=user_email, html_message="link/{token}")
-    print(token)
 
+    link = f"{settings.HOST}/#/reset_password/{token}"
 
-async def reset_token_exists(session: AsyncSession, token: str):
-    token_model = await get_reset_token(session=session, token=token)
-    return token_model != None
+    html_message = u'''
+        <html>
+            <head></head>
+            <body>
+            <p>Сброс пароля --></p>
+                <a href="%s">Verify</a>
+                %s
+            </body>
+        </html>
+    ''' % (link, link)
+    send_email(email_to=user_email, html_message=html_message, subject="Сброс пароля")
 
 
 async def reset_password(session: AsyncSession, token: str, new_password: str):
@@ -236,7 +258,7 @@ async def change_name_service(session: AsyncSession, new_name: str, user: User):
     if len(new_name) < 2:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Name is too short"
+            detail="Имя слишком короткое"
         )
     user.name = new_name
     await session.commit()
