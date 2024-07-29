@@ -5,7 +5,7 @@ from fastapi import Request
 from src.api_v1.auth.crud import get_user_by_email
 from src.api_v1.auth.exceptions import InvalidCredentials, InvalidToken
 from src.api_v1.auth.security import check_password
-from src.api_v1.auth.service import create_access_token
+from src.api_v1.auth.utils import create_access_token
 from src.api_v1.utils import decode_jwt
 from src.core import settings
 from src.core.database import db_helper

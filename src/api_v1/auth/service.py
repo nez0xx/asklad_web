@@ -2,49 +2,45 @@ from datetime import timedelta
 
 from fastapi import HTTPException, status, Depends, Request
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer
+
 from jwt import InvalidTokenError, ExpiredSignatureError
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.api_v1.utils
-from src.api_v1.auth.crud import get_user_by_email, create_reset_token, create_user, set_password, get_reset_token, \
-    get_user_by_id, delete_reset_token, get_active_reset_token_by_user_id, get_email_confirm_token, \
-    delete_email_confirm_token
+from .constants import (
+    ACCESS_TOKEN_TYPE,
+    REFRESH_TOKEN_TYPE,
+    TOKEN_TYPE_FIELD
+)
 
-from src.api_v1.auth import crud, utils
+from src.api_v1.auth.crud import (
+    get_user_by_email,
+    create_reset_token,
+    create_user,
+    set_password,
+    get_reset_token,
+    get_user_by_id,
+    delete_reset_token,
+    get_active_reset_token_by_user_id,
+    get_email_confirm_token,
+    delete_email_confirm_token
+)
+
+import src.api_v1.utils
+
 from src.api_v1.auth.schemas import AuthUser, RegisterUser
 from src.api_v1.auth.security import check_password, hash_password
-from src.api_v1.auth.utils import generate_id
+from src.api_v1.auth.utils import generate_id, create_jwt, send_confirm_link
+
 from src.core.database import User, db_helper, ResetToken
 from src.core.settings import settings
+
 from src.exceptions import NotFound
+
 from src.smtp import send_email
-
-TOKEN_TYPE_FIELD = "type"
-
-ACCESS_TOKEN_TYPE = "access"
-REFRESH_TOKEN_TYPE = "refresh"
 
 
 http_bearer = HTTPBearer()
-
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/auth/login",
-)
-
-
-def get_current_token_payload(token=Depends(oauth2_scheme)):
-
-    try:
-        payload = src.api_v1.utils.decode_jwt(token)
-
-    except InvalidTokenError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"invalid token error: {e}",
-            # detail=f"invalid token error",
-        )
-
-    return payload
 
 
 async def get_current_user_for_refresh(
@@ -77,41 +73,6 @@ async def get_current_user_for_refresh(
     raise unauthed_exc
 
 
-def create_jwt(
-        token_type: str,
-        payload: dict,
-        expire_minutes: int = settings.auth_jwt.access_token_expire_minutes,
-        expire_timedelta: timedelta | None = None
-) -> str:
-
-    payload[TOKEN_TYPE_FIELD] = token_type
-
-    token = src.api_v1.utils.encode_jwt(payload, expire_minutes=expire_minutes)
-
-    return token
-
-
-def create_access_token(user_email):
-    payload = {
-        "sub": user_email,
-        "email": user_email
-    }
-    access_token = create_jwt(ACCESS_TOKEN_TYPE, payload)
-    return access_token
-
-
-def create_refresh_token(user_email):
-    payload = {
-        "sub": user_email
-    }
-    refresh_token = create_jwt(
-        token_type=REFRESH_TOKEN_TYPE,
-        payload=payload,
-        expire_minutes=settings.auth_jwt.refresh_token_expire_minutes
-    )
-    return refresh_token
-
-
 async def authenticate_user(
         user_schema: AuthUser,
         session: AsyncSession,
@@ -137,7 +98,7 @@ async def authenticate_user(
         raise unauthed_exc
 
     if user.is_verify is False:
-        await utils.send_confirm_link(session=session, email=user_schema.email, user_id=user.id)
+        await send_confirm_link(session=session, email=user_schema.email, user_id=user.id)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Подтвердите ваш аккаунт. Ссылка отправлена на ваш email."
@@ -152,13 +113,13 @@ async def register_user(session: AsyncSession, user_schema: RegisterUser):
         email=user_schema.email
     )
     if user:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Пользователь с таким email уже существует")
-
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Пользователь с таким email уже существует"
+        )
     else:
         user = await create_user(session, user_schema=user_schema)
-
-    await utils.send_confirm_link(session=session, email=user_schema.email, user_id=user.id)
-
+    await send_confirm_link(session=session, email=user_schema.email, user_id=user.id)
     return user
 
 

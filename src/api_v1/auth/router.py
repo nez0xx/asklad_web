@@ -6,8 +6,8 @@ from . import service
 
 
 from src.api_v1.auth.service import (
-    create_access_token,
-    get_current_user_for_refresh, reset_password_request
+    get_current_user_for_refresh,
+    reset_password_request
 )
 from .dependencies import get_current_user
 
@@ -17,6 +17,7 @@ from src.api_v1.auth.schemas import (
     RegisterUser,
     AuthUser
 )
+from .utils import create_access_token, create_refresh_token
 
 http_bearer = HTTPBearer(auto_error=False)
 security = HTTPBasic()
@@ -46,8 +47,8 @@ async def auth_user_issue_jwt(
 ):
     user = await service.authenticate_user(user_data, session)
 
-    access_token = service.create_access_token(user.email)
-    refresh_token = service.create_refresh_token(user.email)
+    access_token = create_access_token(user.email)
+    refresh_token = create_refresh_token(user.email)
 
     response.set_cookie(key='refresh_token', value=refresh_token, httponly=True)
 

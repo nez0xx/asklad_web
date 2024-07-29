@@ -2,8 +2,9 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
+from src.api_v1.auth.constants import TOKEN_TYPE_FIELD, ACCESS_TOKEN_TYPE
 from src.api_v1.auth.crud import get_user_by_email
-from src.api_v1.auth.service import get_current_token_payload, TOKEN_TYPE_FIELD, ACCESS_TOKEN_TYPE
+from src.api_v1.auth.utils import get_current_token_payload
 from src.core.database import User, db_helper
 
 
