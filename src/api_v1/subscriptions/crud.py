@@ -32,6 +32,7 @@ async def create_subscription_in_db(
         expired_at: datetime,
         user_id: int,
         # price: int,
+        tariff_id: int,
         started_at: datetime | None = None
 ) -> Subscription:
     now = datetime.now(tz=None) + timedelta(hours=3)
@@ -39,7 +40,8 @@ async def create_subscription_in_db(
     new_sub = Subscription(
         user_id=user_id,
         expired_at=expired_at,
-        created_at=now
+        created_at=now,
+        tariff_id=tariff_id
     )
     if started_at:
         new_sub.started_at = started_at

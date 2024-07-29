@@ -36,14 +36,7 @@ class Subscription(Base):
     user_relationship: Mapped["User"] = relationship(
         back_populates="subscriptions_relationship"
     )
-    ''''
-    paypal_payment: Mapped["PayPalPayment"] = relationship(
-        back_populates="subscription"
-    )
-    freekassa_payment_relationship: Mapped["FreekassaPayment"] = relationship(
-        back_populates="subscription_relationship"
-    )
-    '''
+
     tariff_id: Mapped[int] = mapped_column(ForeignKey("tariffs.id"))
 
     tariff_relationship: Mapped["Tariff"] = relationship(

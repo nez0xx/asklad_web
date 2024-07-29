@@ -10,6 +10,7 @@ class SubscriptionAdmin(ModelView, model=Subscription):
         Subscription.user_id,
         Subscription.user_relationship,
         Subscription.is_active,
+        Subscription.tariff_id,
         Subscription.expired_at,
         Subscription.started_at,
         Subscription.created_at,

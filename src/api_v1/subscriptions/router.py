@@ -22,11 +22,11 @@ router = APIRouter(
 @router.post(path="/create")
 async def create_subscription(
         tariff_id: int,
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user)
+        user_id: int,
+        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)
 ):
 
-    await create_subscription_service(session=session, tariff_id=tariff_id, user_id=user.id)
+    await create_subscription_service(session=session, tariff_id=tariff_id, user_id=user_id)
 
 
 @router.get(path="/check")

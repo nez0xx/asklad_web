@@ -12,7 +12,8 @@ async def create_subscription_service(session: AsyncSession, tariff_id: int, use
     sub = await create_subscription_in_db(
         session=session,
         expired_at=expired_at,
-        user_id=user_id
+        user_id=user_id,
+        tariff_id=tariff_id
     )
 
     return sub
