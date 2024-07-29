@@ -24,7 +24,7 @@ async def create_subscription(
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
-    expired_at = datetime.now(tz=timezone(offset=timedelta(hours=5))) + timedelta(minutes=5)
+    expired_at = datetime.now(tz=None) + timedelta(minutes=5) + timedelta(hours=3)#мск время
 
     sub = await crud.create_subscription_in_db(
         session=session,

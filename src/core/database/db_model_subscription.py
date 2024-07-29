@@ -26,7 +26,6 @@ class Subscription(Base):
     #    ForeignKey("tariffs.id")
     #)
     created_at: Mapped[datetime] = mapped_column(
-        default=datetime.now(),
         server_default=func.now(),
     )
     is_active: Mapped[bool] = mapped_column(

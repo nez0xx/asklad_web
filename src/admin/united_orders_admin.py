@@ -13,6 +13,7 @@ class UnitedOrderAdmin(ModelView, model=UnitedOrder):
         UnitedOrder.delivery_date,
         UnitedOrder.accepted_by,
         UnitedOrder.employee_relationship,
+        UnitedOrder.created_at,
         UnitedOrder.orders_relationship
 
     ]

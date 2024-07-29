@@ -35,10 +35,8 @@ class UnitedOrder(Base):
 
     delivered: Mapped[bool] = mapped_column(default=False)
 
-    created_at: Mapped[datetime] = mapped_column(
-        default=datetime.now()
-    )
-    
+    created_at: Mapped[datetime]
+
     def __repr__(self):
         return f"{self.id}"
 

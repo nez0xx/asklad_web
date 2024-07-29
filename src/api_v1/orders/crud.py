@@ -1,4 +1,4 @@
-from datetime import date, timezone, timedelta
+from datetime import date, timezone, timedelta, datetime
 
 from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload, joinedload
@@ -16,10 +16,14 @@ async def create_united_order(
         united_order_id: str,
         warehouse_id: int
 ) -> UnitedOrder:
-
-    united_order = UnitedOrder(id=united_order_id, warehouse_id=warehouse_id)
+    now = datetime.now(tz=None) + timedelta(hours=3)
+    united_order = UnitedOrder(
+        id=united_order_id,
+        warehouse_id=warehouse_id,
+        created_at=now
+    )
     session.add(united_order)
-    await session.commit()
+    await session.flush()
     return united_order
 
 
@@ -58,14 +62,15 @@ async def create_order(
 ) -> str:
 
     phone = normalize_phone(order_schema.customer_phone)
-
+    now = datetime.now(tz=None) + timedelta(hours=3)
     order = Order(
         id=order_schema.order_id,
         customer_id=customer_id,
         customer_name=order_schema.customer_name,
         customer_phone=phone,
         warehouse_id=warehouse_id,
-        united_order_id=united_order_id
+        united_order_id=united_order_id,
+        created_at=now
     )
     session.add(order)
 
@@ -81,7 +86,7 @@ async def create_order(
             order_id=order.id
         ))
 
-    await session.commit()
+    await session.flush()
     return order.id
 
 

@@ -13,12 +13,14 @@ class OrderAdmin(ModelView, model=Order):
         Order.customer_id,
         Order.customer_name,
         Order.customer_relationship,
+        Order.created_at,
         Order.comment,
         Order.warehouse_id,
         Order.given_by,
         Order.is_given_out,
         Order.issue_date,
-        Order.products_details,
+        Order.products_details
+
     ]
     form_excluded_columns = []
     '''

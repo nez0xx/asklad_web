@@ -79,6 +79,7 @@ async def add_united_order_service(
             united_order_id=united_order_schema.united_order_id,
             warehouse_id=united_order_schema.warehouse_id
         )
+    await session.commit()
 
     return united_order_schema.united_order_id
 
