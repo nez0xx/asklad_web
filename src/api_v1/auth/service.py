@@ -73,10 +73,7 @@ async def get_current_user_for_refresh(
     raise unauthed_exc
 
 
-async def authenticate_user(
-        user_schema: AuthUser,
-        session: AsyncSession,
-) -> User:
+async def authenticate_user(user_schema: AuthUser, session: AsyncSession) -> User:
 
     unauthed_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -107,7 +104,7 @@ async def authenticate_user(
     return user
 
 
-async def register_user(session: AsyncSession, user_schema: RegisterUser):
+async def register_user(session: AsyncSession, user_schema: RegisterUser) -> User:
     user = await get_user_by_email(
         session=session,
         email=user_schema.email
@@ -135,12 +132,7 @@ async def confirm_email(session: AsyncSession, token: str):
     await session.commit()
 
 
-async def change_password(
-        session: AsyncSession,
-        password: str,
-        new_password: str,
-        user: User
-):
+async def change_password(session: AsyncSession, password: str, new_password: str, user: User):
     if not check_password(password=password, hashed_password=user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -164,10 +156,7 @@ async def reset_token_exists(session: AsyncSession, token: str):
     return token_model != None
 
 
-async def reset_password_request(
-        session: AsyncSession,
-        user_email: str
-):
+async def reset_password_request(session: AsyncSession, user_email: str):
     user = await get_user_by_email(session=session, email=user_email)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пользователя не существует")

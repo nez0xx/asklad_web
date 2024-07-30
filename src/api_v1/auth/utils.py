@@ -93,5 +93,3 @@ async def send_confirm_link(session: AsyncSession, email: str, user_id):
         ''' % (link, link)
 
     send_email(email, html_message=html, subject="Регистрация")
-
-

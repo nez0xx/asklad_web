@@ -1,14 +1,23 @@
+import uuid
+from datetime import datetime, timedelta
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.warehouses import crud
 from src.api_v1.auth.crud import get_user_by_id, get_user_by_email
 from src.api_v1.utils import encode_jwt, decode_jwt
+from src.api_v1.warehouses.crud import (
+    get_employee_invite,
+    create_employee_invite,
+    add_employee,
+    delete_employee_invite
+)
 from src.api_v1.warehouses.schemas import WarehouseCreateSchema, WarehouseUpdateSchema
 from fastapi import HTTPException, status
 
-from src.core.database import Warehouse
+from src.core.database import Warehouse, EmployeeInvite
 from src.core.database.db_model_warehouse_employee_association import WarehouseEmployeeAssociation
 
-from src.exceptions import WarehouseDoesNotExist
+from src.exceptions import WarehouseDoesNotExist, NotFound
 
 from src.core.settings import settings
 
@@ -37,53 +46,61 @@ async def create_warehouse(session: AsyncSession, schema: WarehouseCreateSchema)
 
 
 async def send_employee_invite(session: AsyncSession, employee_email: str, warehouse: Warehouse):
+
     employee = await get_user_by_email(session, employee_email)
     if employee is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {employee_email} doesn't exist"
+            detail=f"Пользователя {employee_email} не существует"
         )
-
-    if warehouse is None:
-        raise WarehouseDoesNotExist()
 
     employee_own_warehouse = await crud.get_user_available_warehouse(
         session=session,
         employee_id=employee.id
     )
-
     if employee_own_warehouse:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"User with id {employee.id} already manage warehouse"
+            detail=f"Пользователь уже работает на складе"
         )
 
-    token = encode_jwt(
-        payload={
-            "employee_id": employee.id,
-            "warehouse_id": warehouse.id
-        },
-        expire_minutes=60*24*3
+    token = await create_employee_invite(
+        session=session,
+        employee_id=employee.id,
+        warehouse_id=warehouse.id
     )
     invite_link = f"http://{settings.HOST}/invite/{token}"
-    print(invite_link)
-    send_email(email_to=employee.email, html_message=invite_link, subject="Invite to warehouse")
+    send_email(email_to=employee.email, html_message=invite_link, subject="Приглашение на склад")
 
 
 async def confirm_employee_invite(session: AsyncSession, token: str):
-    data = decode_jwt(token)
+    invite = await get_employee_invite(session=session, token=token)
+    if invite is None:
+        raise NotFound()
 
-    try:
-        await crud.add_employee(
-            session=session,
-            employee_id=data["employee_id"],
-            warehouse_id=data["warehouse_id"]
+    now = datetime.now(tz=None) + timedelta(hours=3)
+    if invite.expire_at < now:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Срок приглашения истёк"
         )
-    except IntegrityError as e:
+
+    employee_own_warehouse = await crud.get_user_available_warehouse(
+        session=session,
+        employee_id=invite.employee_id
+    )
+    if employee_own_warehouse:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Invite has already been accepted"
+            detail=f"Пользователь уже работает на складе"
         )
+
+    await add_employee(
+        session=session,
+        employee_id=invite.employee_id,
+        warehouse_id=invite.warehouse_id
+    )
+    await delete_employee_invite(session=session, token=token)
 
 
 async def warehouse_info(session: AsyncSession, employee_id: int) -> Warehouse:

@@ -1,3 +1,6 @@
+import uuid
+from datetime import timedelta, datetime
+
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
@@ -6,7 +9,7 @@ from src.api_v1.warehouses.schemas import WarehouseCreateSchema, WarehouseUpdate
 
 
 
-from src.core.database import Warehouse, ProductOrderAssociation, Order, UnitedOrder, User
+from src.core.database import Warehouse, ProductOrderAssociation, Order, UnitedOrder, User, EmployeeInvite
 from src.core.database.db_model_warehouse_employee_association import WarehouseEmployeeAssociation
 
 
@@ -145,4 +148,28 @@ async def delete_warehouse(session: AsyncSession, warehouse: Warehouse):
     await session.commit()
 
 
+async def create_employee_invite(session: AsyncSession, employee_id: int, warehouse_id: int) -> str:
+    token = uuid.uuid4().hex
+    expire_at = datetime.now() + timedelta(days=1)
+    invite_model = EmployeeInvite(
+        token=token,
+        employee_id=employee_id,
+        warehouse_id=warehouse_id,
+        expire_at=expire_at
+    )
+    session.add(invite_model)
+    await session.commit()
+    return token
 
+
+async def get_employee_invite(session: AsyncSession, token: str) -> EmployeeInvite | None:
+    stmt = (select(EmployeeInvite)
+            .where(EmployeeInvite.token == token))
+    result = await session.execute(stmt)
+    invite = result.scalar_one_or_none()
+    return invite
+
+
+async def delete_employee_invite(session: AsyncSession, token: str):
+    stmt = delete(EmployeeInvite).where(EmployeeInvite.token == token)
+    await session.execute(stmt)

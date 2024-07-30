@@ -54,23 +54,6 @@ async def get_user_available_warehouse_view(
     return data
 
 
-@router.get(
-    path="/{warehouse_id}"
-)
-async def warehouse_info_view(
-        warehouse_id: int,
-        session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
-        user: User = Depends(get_current_user)
-):
-    warehouse = await service.warehouse_info(
-        session=session,
-        employee_id=user.id,
-        warehouse_id=warehouse_id
-    )
-    print(warehouse)
-    return warehouse
-
-
 @router.post(
     path="/"
 )

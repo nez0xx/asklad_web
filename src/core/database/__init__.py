@@ -13,7 +13,8 @@ __all__ = (
     'WarehouseEmployeeAssociation',
     'Tariff',
     'Payment',
-    'EmailConfirmToken'
+    'EmailConfirmToken',
+    'EmployeeInvite'
 )
 
 from .db_helper import db_helper
@@ -31,3 +32,4 @@ from .db_model_warehouse_employee_association import WarehouseEmployeeAssociatio
 from .db_model_tariff import Tariff
 from .db_model_payment import Payment
 from .db_model_email_confirm import EmailConfirmToken
+from .db_model_employee_invite import EmployeeInvite
