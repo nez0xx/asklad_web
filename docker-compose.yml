@@ -29,7 +29,7 @@ services:
     env_file:
       - .env
     ports:
-      - "80:9999"
+      - "9998:9999"
     depends_on:
       - database_api
       - notifications_bot

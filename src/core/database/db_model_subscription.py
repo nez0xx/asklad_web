@@ -22,9 +22,6 @@ class Subscription(Base):
     user_id: Mapped[str] = mapped_column(
         ForeignKey("users.id")
     )
-    #tariff_id: Mapped[str] = mapped_column(
-    #    ForeignKey("tariffs.id")
-    #)
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
     )

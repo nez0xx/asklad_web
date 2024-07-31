@@ -13,6 +13,8 @@ from .order_product_association_admin import ProductOrderAssociationAdmin
 from .tariffs_admin import TariffAdmin
 from .reset_tokens_admin import ResetTokenAdmin
 from .email_tokens_admin import EmailConfirmTokenAdmin
+from .payments_admin import PaymentAdmin
+from .employee_invites_admin import EmployeeInviteAdmin
 
 full_admin_views_list = [
     UserAdmin,
@@ -25,5 +27,7 @@ full_admin_views_list = [
     ProductOrderAssociationAdmin,
     TariffAdmin,
     ResetTokenAdmin,
-    EmailConfirmTokenAdmin
+    EmailConfirmTokenAdmin,
+    EmployeeInviteAdmin,
+    PaymentAdmin
 ]
