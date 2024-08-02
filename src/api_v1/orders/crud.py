@@ -1,6 +1,6 @@
 from datetime import date, timezone, timedelta, datetime
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from sqlalchemy.orm import selectinload, joinedload
 
 from src.core.database import Order, UnitedOrder, Product, ProductOrderAssociation
@@ -120,7 +120,7 @@ async def get_all_orders(
         stmt = stmt.where(Order.id.contains(search_id))
     if search_name:
         search_name = search_name.lower()
-        stmt = stmt.where(Order.customer_name.contains(search_name))
+        stmt = stmt.where(func.lower(Order.customer_name).contains(search_name))
     if is_given_out is not None:
         stmt = stmt.where(Order.is_given_out == is_given_out)
 
