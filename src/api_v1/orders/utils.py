@@ -72,7 +72,6 @@ async def create_payment_list_excel(united_orders: list[UnitedOrder]):
     sheet = wb['Первый лист']
     sheet.page_margins = PageMargins(left=0, right=0, top=0, bottom=0)
 
-
     cur_row = 1
 
     for united_order in united_orders:
@@ -86,8 +85,7 @@ async def create_payment_list_excel(united_orders: list[UnitedOrder]):
         sheet.cell(row=cur_row, column=6, value="Подпись клиента").style = 'highlight'
         cur_row += 1
 
-
-        orders = united_order.orders_relationship
+        orders = sorted(list(united_order.orders_relationship), key=lambda o: o.customer_name)
 
         for i in range(len(orders)):
 
@@ -103,7 +101,6 @@ async def create_payment_list_excel(united_orders: list[UnitedOrder]):
             sheet.row_dimensions[cur_row].height = 30
 
             cur_row += 1
-
 
         cur_row += 1
 

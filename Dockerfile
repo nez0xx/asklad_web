@@ -2,7 +2,8 @@ FROM python:3.12
 
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get -y install uvicorn
+    apt-get -y install uvicorn && \
+    apt-get -y install wkhtmltopdf
 
 WORKDIR /home/api
 

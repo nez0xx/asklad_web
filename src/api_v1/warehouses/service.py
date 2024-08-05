@@ -69,7 +69,7 @@ async def send_employee_invite(session: AsyncSession, employee_email: str, wareh
         employee_id=employee.id,
         warehouse_id=warehouse.id
     )
-    invite_link = f"{settings.HOST}/#/confirm_employee/{token}"
+    invite_link = f"{settings.HOST}/#/invite/{token}"
     send_email(email_to=employee.email, html_message=invite_link, subject="Приглашение на склад")
 
 

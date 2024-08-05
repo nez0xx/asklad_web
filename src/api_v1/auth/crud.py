@@ -21,7 +21,7 @@ async def create_user(session: AsyncSession, user_schema: RegisterUser):
         hashed_password=hashed_password,
         email=email,
         name=user_schema.name,
-        is_verify=True
+        is_verify=False
     )
 
     session.add(user)
