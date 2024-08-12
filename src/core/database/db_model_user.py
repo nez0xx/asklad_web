@@ -36,7 +36,7 @@ class User(Base):
     subscriptions_relationship: Mapped[list["Subscription"]] = relationship(back_populates="user_relationship")
 
     created_at: Mapped[datetime] = mapped_column(
-        default=datetime.now()
+        default=datetime.now
 
     )
 

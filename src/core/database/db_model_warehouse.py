@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 
 from sqlalchemy import String, text, func, ForeignKey
 from sqlalchemy.orm import mapped_column, Mapped, relationship
@@ -26,8 +26,8 @@ class Warehouse(Base):
 
     united_orders_relationship: Mapped[list["UnitedOrder"]] = relationship(back_populates="warehouse_relationship")
 
-    created_at: Mapped[date] = mapped_column(
-        default=date.today(),
+    created_at: Mapped[datetime] = mapped_column(
+        default=datetime.now,
         server_default=func.now()
     )
 

@@ -48,7 +48,7 @@ async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
 
 async def create_email_confirm_token(session: AsyncSession, user_id: int) -> str:
     token = uuid.uuid4().hex
-    now = datetime.now() + timedelta(hours=3)#мск время
+    now = datetime.now()
     token_model = EmailConfirmToken(token=token, user_id=user_id, created_at=now)
     session.add(token_model)
     await session.commit()
@@ -74,7 +74,7 @@ async def delete_email_confirm_token(session: AsyncSession, token: str):
 
 async def create_reset_token(session: AsyncSession, user_id: int) -> str:
     token = uuid.uuid4().hex
-    expired_at = datetime.now() + timedelta(minutes=10) + timedelta(hours=3)#мск время
+    expired_at = datetime.now() + timedelta(minutes=10)
     token_model = ResetToken(token=token, user_id=user_id, expired_at=expired_at)
     session.add(token_model)
     await session.commit()
@@ -83,7 +83,7 @@ async def create_reset_token(session: AsyncSession, user_id: int) -> str:
 
 
 async def get_reset_token(session: AsyncSession, token: str) -> ResetToken | None:
-    now = datetime.now() + timedelta(hours=3)
+    now = datetime.now()
     stmt = (select(ResetToken)
             .where(ResetToken.token == token)
             .where(ResetToken.expired_at > now))
@@ -93,7 +93,7 @@ async def get_reset_token(session: AsyncSession, token: str) -> ResetToken | Non
 
 
 async def get_active_reset_token_by_user_id(session: AsyncSession, user_id: int) -> ResetToken | None:
-    now = datetime.now() + timedelta(hours=3)
+    now = datetime.now()
     stmt = (select(ResetToken)
             .where(ResetToken.user_id == user_id)
             .where(ResetToken.expired_at > now))

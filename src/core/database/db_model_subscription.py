@@ -16,13 +16,14 @@ class Subscription(Base):
     #price: Mapped[int]
     #paid_time: Mapped[datetime | None]
     started_at: Mapped[datetime] = mapped_column(
-        default=datetime.now(),
+        default=datetime.now,
         server_default=func.now()
     )
     user_id: Mapped[str] = mapped_column(
         ForeignKey("users.id")
     )
     created_at: Mapped[datetime] = mapped_column(
+        default=datetime.now,
         server_default=func.now(),
     )
     is_active: Mapped[bool] = mapped_column(

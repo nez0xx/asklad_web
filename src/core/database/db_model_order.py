@@ -49,7 +49,9 @@ class Order(Base):
 
     comment: Mapped[str] = mapped_column(nullable=True)
 
-    created_at: Mapped[datetime]
+    created_at: Mapped[datetime] = mapped_column(
+        default=datetime.now
+    )
 
     def __repr__(self):
         return f"{self.id}_{self.customer_name.split()[0]}"

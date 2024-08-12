@@ -78,7 +78,7 @@ async def confirm_employee_invite(session: AsyncSession, token: str):
     if invite is None:
         raise NotFound()
 
-    now = datetime.now(tz=None) + timedelta(hours=3)
+    now = datetime.now(tz=None)
     if invite.expire_at < now:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

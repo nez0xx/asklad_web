@@ -16,11 +16,9 @@ async def create_united_order(
         united_order_id: str,
         warehouse_id: int
 ) -> UnitedOrder:
-    now = datetime.now(tz=None) + timedelta(hours=3)
     united_order = UnitedOrder(
         id=united_order_id,
-        warehouse_id=warehouse_id,
-        created_at=now
+        warehouse_id=warehouse_id
     )
     session.add(united_order)
     await session.flush()
@@ -62,15 +60,13 @@ async def create_order(
 ) -> str:
 
     phone = normalize_phone(order_schema.customer_phone)
-    now = datetime.now(tz=None) + timedelta(hours=3)
     order = Order(
         id=order_schema.order_id,
         customer_id=customer_id,
         customer_name=order_schema.customer_name,
         customer_phone=phone,
         warehouse_id=warehouse_id,
-        united_order_id=united_order_id,
-        created_at=now
+        united_order_id=united_order_id
     )
     session.add(order)
 
