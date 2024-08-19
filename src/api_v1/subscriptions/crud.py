@@ -17,13 +17,12 @@ async def get_active_subscription_by_user_id(
         .where(
             (Subscription.user_id == user_id) &
             (Subscription.is_active == True) &
-            (Subscription.expired_at > datetime.now(tz=timezone(offset=timedelta(hours=5)))) &
-            (Subscription.started_at < datetime.now(tz=timezone(offset=timedelta(hours=5))))
+            (Subscription.expired_at > datetime.now(tz=None)) &
+            (Subscription.started_at < datetime.now(tz=None))
         )
     )
-    print(datetime.now(tz=timezone(offset=timedelta(hours=5))))
+
     result = await session.execute(stmt)
-    print(result, result.all())
     return await session.scalar(statement=stmt)
 
 

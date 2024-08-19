@@ -21,7 +21,9 @@ class Payment(Base):
     subscription_id: Mapped[int | None] = mapped_column(
         ForeignKey("subscriptions.id")
     )
-    created_at: Mapped[datetime]
+    created_at: Mapped[datetime] = mapped_column(
+        default=datetime.now
+    )
 
     payment_success: Mapped[bool] = mapped_column(
         default=False
