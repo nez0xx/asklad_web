@@ -290,6 +290,7 @@ async def notify_customers(
 async def delivery_united_order_service(
         session: AsyncSession,
         united_order_id: str,
+        notificate: bool,
         user: User
 ):
 
@@ -314,27 +315,24 @@ async def delivery_united_order_service(
         warehouse_id=warehouse.id
     )
 
-    # изменить схемы!!
-
-    status_code = await notify_customers(
-        session=session, 
-        united_order_id=united_order_id, 
-        warehouse_name=warehouse.name
-    )
-    
-    if status_code == 200:
-        await crud.delivery_united_order(
+    if notificate:
+        status_code = await notify_customers(
             session=session,
-            united_order=united_order,
-            employee_id=user.id
+            united_order_id=united_order_id,
+            warehouse_name=warehouse.name
         )
-    '''
+    
+        if status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Notifications bot error"
+            )
     await crud.delivery_united_order(
         session=session,
         united_order=united_order,
         employee_id=user.id
     )
-    '''
+
 
 async def delete_united_order(
         session: AsyncSession,

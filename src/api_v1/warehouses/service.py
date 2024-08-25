@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.warehouses import crud
 from src.api_v1.auth.crud import get_user_by_id, get_user_by_email
-from src.api_v1.utils import encode_jwt, decode_jwt
+from src.api_v1.utils import encode_jwt, decode_jwt, get_email_template
 from src.api_v1.warehouses.crud import (
     get_employee_invite,
     create_employee_invite,
@@ -69,8 +69,24 @@ async def send_employee_invite(session: AsyncSession, employee_email: str, wareh
         employee_id=employee.id,
         warehouse_id=warehouse.id
     )
-    invite_link = f"{settings.HOST}/#/invite/{token}"
-    send_email(email_to=employee.email, html_message=invite_link, subject="Приглашение на склад")
+    invite_link = f"{settings.HOST}/#/confirm_employee/{token}"
+
+    template = get_email_template()
+    html = template.render(
+        preheader="Примите приглашение на сайте asklad.pro",
+        title="А.Склад",
+        logo_url="https://asklad.pro/assets/logo-vGv-sIDM.png",
+        subject="Приглашение на склад",
+        header_text="Примите приглашение на склад",
+        button_link=invite_link,
+        button_text="Принять",
+        alternative_link=invite_link,
+        footer_text="Если вы не регистрировались на сайте asklad.pro, проигнорируйте это сообщение",
+        company_info="А.Склад"
+
+    )
+
+    send_email(email_to=employee.email, html_message=html, subject="Приглашение на склад")
 
 
 async def confirm_employee_invite(session: AsyncSession, token: str):

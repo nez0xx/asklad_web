@@ -26,7 +26,7 @@ from src.api_v1.auth.crud import (
     delete_email_confirm_token
 )
 
-import src.api_v1.utils
+from src.api_v1.utils import get_email_template, decode_jwt
 
 from src.api_v1.auth.schemas import AuthUser, RegisterUser
 from src.api_v1.auth.security import check_password, hash_password
@@ -57,7 +57,7 @@ async def get_current_user_for_refresh(
         raise unauthed_exc
 
     try:
-        payload = src.api_v1.utils.decode_jwt(refresh_token)
+        payload = decode_jwt(refresh_token)
     except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -173,17 +173,21 @@ async def reset_password_request(session: AsyncSession, user_email: str):
 
     link = f"{settings.HOST}/#/reset_password/{token}"
 
-    html_message = u'''
-        <html>
-            <head></head>
-            <body>
-            <p>Сброс пароля --></p>
-                <a href="%s">Verify</a>
-                %s
-            </body>
-        </html>
-    ''' % (link, link)
-    send_email(email_to=user_email, html_message=html_message, subject="Сброс пароля")
+    template = get_email_template()
+    html = template.render(
+        preheader="Подтвердите действие на сайте asklad.pro",
+        title="А.Склад",
+        logo_url="https://asklad.pro/assets/logo-vGv-sIDM.png",
+        subject="Сброс пароля",
+        header_text="Нажмите на кнопку, чтобы сбросить пароль от аккаунта А.Склад",
+        button_link=link,
+        button_text="Сбросить",
+        alternative_link=link,
+        footer_text="Если вы не регистрировались на сайте asklad.pro, проигнорируйте это сообщение",
+        company_info="А.Склад"
+    )
+
+    send_email(email_to=user_email, html_message=html, subject="Сброс пароля")
 
 
 async def reset_password(session: AsyncSession, token: str, new_password: str):

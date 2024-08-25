@@ -1,8 +1,11 @@
+import os
 from datetime import datetime, timezone, timedelta
 
 import jwt
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from src.core import settings
+from src.core.settings import BASE_DIR
 
 
 def encode_jwt(
@@ -38,3 +41,13 @@ def decode_jwt(
         algorithms=[algorithm],
     )
     return decoded
+
+
+def get_email_template(template_name: str = "template.html"):
+    path = os.path.join(BASE_DIR, "templates")
+    env = Environment(
+        loader=FileSystemLoader(path),
+        autoescape=select_autoescape(['html'])
+    )
+    template = env.get_template(template_name)
+    return template

@@ -11,6 +11,12 @@ import pdfkit
 from src.core.settings import BASE_DIR
 
 
+def extract_comment(text):
+    text = text.split("Комментарии и пожелания:")[1]
+    comment = text.split("Код товара")[0]
+    return comment
+
+
 def extract_tables(filename):
     doc = fitz.open(filename)
     tables = []
@@ -23,6 +29,7 @@ def extract_tables(filename):
         list_text = text.split("\n")
 
         date, phone = None, None
+        comment = extract_comment(text)
 
         for i in range(len(list_text)):
             if list_text[i] == "Дата накладной":
@@ -32,6 +39,7 @@ def extract_tables(filename):
                 break
 
         table_user_info = [["Дата накладной:", date, "    ", "Моб. телефон:", phone]]
+        table_comment = [["Комментарий:", comment]]
         table_info = pdf_tables[0].extract()
         table_products = pdf_tables[1].extract()
 
@@ -53,6 +61,12 @@ def extract_tables(filename):
             columns=["date_h", "date", "empty", "phone_h", "phone"],
             font_size=7,
             data=table_user_info
+        ))
+        tables.append(Table(
+            type="comment",
+            columns=["title", "comment"],
+            font_size=7,
+            data=table_comment
         ))
 
     return tables

@@ -1,4 +1,5 @@
 table {
+    font-family: 'Times New Roman';
    border-collapse: collapse;
    /*убираем пустые промежутки между ячейками*/
    border: 1px solid grey;
@@ -52,6 +53,9 @@ th {
     text-align: center;
 }
 .orderId{
+    width: 120px
+}
+.title{
     width: 120px
 }
 

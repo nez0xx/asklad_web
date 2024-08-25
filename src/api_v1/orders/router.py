@@ -146,12 +146,14 @@ async def give_order_out(
 @router.post(path="/delivery")
 async def delivery_united_order(
         united_order_id: str,
+        notificate: bool = True,
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
     await service.delivery_united_order_service(
         session=session,
         united_order_id=united_order_id,
+        notificate=notificate,
         user=user
     )
 

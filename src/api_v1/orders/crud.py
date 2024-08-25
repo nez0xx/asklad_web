@@ -113,7 +113,7 @@ async def get_all_orders(
     )
     if search_id:
         search_id = search_id.lower()
-        stmt = stmt.where(Order.id.contains(search_id))
+        stmt = stmt.where(func.lower(Order.id).contains(search_id))
     if search_name:
         search_name = search_name.lower()
         stmt = stmt.where(func.lower(Order.customer_name).contains(search_name))

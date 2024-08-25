@@ -30,7 +30,7 @@ def generate_html(tables: list[Table]):
 
             html += "</tr>\n"
 
-        if table.type == "user_info":
+        if table.type == "comment":
             html += "</table><br>\n"
         else:
             html += "</table>\n"

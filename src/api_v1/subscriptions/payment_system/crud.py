@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import Payment
@@ -20,4 +21,14 @@ async def create_payment_model(
     )
     session.add(payment)
     await session.commit()
+
+
+async def get_user_payments(
+        session: AsyncSession,
+        user_id: int
+):
+    stmt = select(Payment).where(Payment.user_id == user_id)
+    result = await session.execute(stmt)
+    payments = result.scalars()
+    return payments
 

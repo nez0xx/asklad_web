@@ -10,6 +10,8 @@ from src.core.database import User, Subscription
 from src.core.database.db_helper import db_helper
 from fastapi.security import HTTPBearer
 from src.api_v1.auth.dependencies import check_user_is_verify, get_current_user
+from .payment_system import crud as payments_crud
+
 
 http_bearer = HTTPBearer()
 
@@ -42,3 +44,12 @@ async def check_sub(
 async def get_tariffs_list(session: AsyncSession = Depends(db_helper.get_scoped_session_dependency)):
     tariffs = await crud.get_all_tariffs(session=session)
     return tariffs
+
+
+@router.get(path="/payments_history")
+async def get_user_payments(
+    session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
+    user: User = Depends(get_current_user)
+):
+    payments = await payments_crud.get_user_payments(session=session, user_id=user.id)
+    return payments
