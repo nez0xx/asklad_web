@@ -115,8 +115,8 @@ async def upload_united_order_view(
         session: AsyncSession = Depends(db_helper.get_scoped_session_dependency),
         user: User = Depends(get_current_user)
 ):
-    orders_ids = await service.add_orders_from_file(session, file, user.id, warehouse.id)
-    return {"The created orders": orders_ids}
+    customers = await service.add_orders_from_file(session, file, user.id, warehouse.id)
+    return customers
 
 
 @router.post(path="/give_out")

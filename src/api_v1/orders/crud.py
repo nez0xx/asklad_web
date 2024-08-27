@@ -236,7 +236,7 @@ async def get_order_cost(
             session=session,
             product_id=association.product_id
         )
-        order_price += product.price * association.amount
+        order_price += product.price_rub * association.amount
         order_pv += product.pv * association.amount
 
     return {

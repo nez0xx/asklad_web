@@ -8,7 +8,7 @@ class ProductAdmin(ModelView, model=Product):
     column_list = [
         Product.id,
         Product.title,
-        Product.price,
+        Product.price_rub,
         Product.pv,
         Product.orders_details
 

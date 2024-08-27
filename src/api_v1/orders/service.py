@@ -35,7 +35,7 @@ async def add_united_order_service(
         session: AsyncSession,
         united_order_schema: UnitedOrderSchema,
         employee_id: int
-) -> str:
+) -> list[str]:
 
     await check_user_in_employees(
         session=session,
@@ -64,6 +64,8 @@ async def add_united_order_service(
         warehouse_id=united_order_schema.warehouse_id
     )
 
+    customers = []
+
     for order_schema in united_order_schema.orders:
 
         customer = await get_or_create_customer(
@@ -79,9 +81,10 @@ async def add_united_order_service(
             united_order_id=united_order_schema.united_order_id,
             warehouse_id=united_order_schema.warehouse_id
         )
+        customers.append(order_schema.customer_name)
     await session.commit()
 
-    return united_order_schema.united_order_id
+    return customers
 
 
 async def get_order_service(
@@ -231,6 +234,7 @@ async def add_orders_from_file(
 
     united_orders = await parse_excel(file)
     united_orders_ids = []
+    customers = []
 
     # проверка на возможное отстутствие заказов в бд
     for united_order in united_orders:
@@ -243,10 +247,10 @@ async def add_orders_from_file(
     for united_order in united_orders:
         united_order["warehouse_id"] = warehouse_id
         schema = UnitedOrderSchema(**united_order)
-        united_order_id = await add_united_order_service(session, schema, employee_id=employee_id)
-        united_orders_ids.append(united_order_id)
+        order_customers = await add_united_order_service(session, schema, employee_id=employee_id)
+        customers.extend(order_customers)
 
-    return united_orders_ids
+    return customers
 
 
 async def notify_customers(
@@ -315,18 +319,6 @@ async def delivery_united_order_service(
         warehouse_id=warehouse.id
     )
 
-    if notificate:
-        status_code = await notify_customers(
-            session=session,
-            united_order_id=united_order_id,
-            warehouse_name=warehouse.name
-        )
-    
-        if status_code != 200:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Notifications bot error"
-            )
     await crud.delivery_united_order(
         session=session,
         united_order=united_order,

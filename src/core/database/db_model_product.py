@@ -10,7 +10,11 @@ class Product(Base):
 
     title: Mapped[str]
 
-    price: Mapped[int] = mapped_column(default=0)
+    price_rub: Mapped[int] = mapped_column(default=0, server_default="0")
+
+    price_byn: Mapped[int] = mapped_column(default=0, server_default="0")
+
+    price_kzt: Mapped[int] = mapped_column(default=0, server_default="0")
 
     pv: Mapped[int] = mapped_column(default=0)
 
